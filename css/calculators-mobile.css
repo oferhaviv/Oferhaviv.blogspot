@@ -1,0 +1,99 @@
+.calc-box {
+    max-width: 100%;
+    margin: 12px auto;
+    padding: 14px;
+    border-radius: 10px;
+  }
+
+  .calc-box h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .calc-section {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+
+  .calc-row label {
+    font-size: 13px;
+  }
+
+  .calc-row input {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .calc-btn {
+    font-size: 14px;
+    padding: 10px;
+    margin-top: 6px;
+  }
+
+  .help-box {
+    font-size: 12px;
+  }
+
+  /* כפתור+שדה שנראו צמודים מדי במובייל */
+  .input-with-button {
+    flex-direction: column;
+  }
+
+  .calc-btn-secondary {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* קצת פחות ריווח מסביב לפוסט במובייל */
+  .page_body .centered {
+    padding: 16px 8px !important;
+  }
+
+  .post-outer {
+    padding: 16px !important;
+  }
+
+  /* --- התאמות מובייל לעמוד הבית – calc-home (screen ≤ 600px) --- */
+
+  .calc-home {
+    padding: 8px 4px 24px;
+  }
+
+  .accordion-label {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+
+  .accordion-content {
+    font-size: 13px;
+  }
+
+  .calc-row-header {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* להפוך את הכפתור לרוחב מלא במובייל */
+  .calc-row-btn {
+    flex: 1 1 auto;
+    text-align: center;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .calc-row-header span {
+    font-size: 13px;
+  }
+
+  .toggle-plus {
+    width: 22px;
+    height: 22px;
+    font-size: 16px;
+  }
+
+  .calc-row-content {
+    font-size: 13px;
+    padding-right: 12px;
+    padding-left: 12px;
+  }
