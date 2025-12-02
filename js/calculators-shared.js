@@ -139,8 +139,7 @@
     document.getElementById('slPercent').innerText = formatPercent(slPercent);
 
     document.getElementById('riskResults').style.display = 'block';
-  }
-  // ======================================================
+  }// ======================================================
 // ==== Toggle for home page accordions (מי אני + מחשבונים) ====
 // ======================================================
 function initCalcHomeAccordions(root) {
@@ -173,7 +172,7 @@ function initCalcHomeAccordions(root) {
   });
 }
 
-// הפעלה כאשר דף נטען (אם HTML כבר קיים ב־Blogger)
+// ריצה אוטומטית למקרה שה-HTML סטטי בבלאגר
 document.addEventListener('DOMContentLoaded', function () {
   if (typeof initCalcHomeAccordions === 'function') {
     initCalcHomeAccordions(document);
