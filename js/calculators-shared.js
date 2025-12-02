@@ -140,3 +140,42 @@
 
     document.getElementById('riskResults').style.display = 'block';
   }
+  // ======================================================
+// ==== Toggle for home page accordions (מי אני + מחשבונים) ====
+// ======================================================
+function initCalcHomeAccordions(root) {
+  var scope = root || document;
+
+  // אקורדיון "עופר חביב — מי אני?"
+  scope.querySelectorAll('.accordion').forEach(function (acc) {
+    var checkbox = acc.querySelector('input[type="checkbox"]');
+    var label = acc.querySelector('.accordion-label');
+
+    if (checkbox && label) {
+      label.addEventListener('click', function (e) {
+        e.preventDefault();
+        checkbox.checked = !checkbox.checked;
+      });
+    }
+  });
+
+  // הפלוסים של רשימת המחשבונים
+  scope.querySelectorAll('.calc-row-box').forEach(function (box) {
+    var checkbox = box.querySelector('.toggle-box');
+    var plus = box.querySelector('.toggle-plus');
+
+    if (checkbox && plus) {
+      plus.addEventListener('click', function (e) {
+        e.preventDefault();
+        checkbox.checked = !checkbox.checked;
+      });
+    }
+  });
+}
+
+// הפעלה כאשר דף נטען (אם HTML כבר קיים ב־Blogger)
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof initCalcHomeAccordions === 'function') {
+    initCalcHomeAccordions(document);
+  }
+});
