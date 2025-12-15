@@ -1,8 +1,8 @@
 {
   "holdings": [
     { "owner": "ofer", "symbol": "AAPL", "qty": 10, "avg": 180, "sl": 165, "tp1": 200, "tp2": 230 },
-	{ "owner": "ofer", "symbol": "DELL", "qty": 10, "avg": 180, "sl": 165, "tp1": 200, "tp2": 230 }
-	{ "owner": "ofer", "symbol": "MSFT", "qty": 10, "avg": 180, "sl": 165, "tp1": 200, "tp2": 230 }
+	{ "owner": "ofer", "symbol": "DELL", "qty": 10, "avg": 180, "sl": 165, "tp1": 200, "tp2": 230 },
+	{ "owner": "ofer", "symbol": "MSFT", "qty": 10, "avg": 180, "sl": 165, "tp1": 200, "tp2": 230 },
 	{ "owner": "guy", "symbol": "AAPL", "qty": 10, "avg": 180, "sl": 165, "tp1": 200, "tp2": 230 }
   ]
 }

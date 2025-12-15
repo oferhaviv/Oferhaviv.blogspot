@@ -1,6 +1,6 @@
 {
   "users": [
-    { "username": "ofer", "passHash": "SHA256_HEX_OF_password+salt", "salt": "abc123", "first_name": "Ofer", "last_name":"Haviv"}
+    { "username": "ofer", "passHash": "SHA256_HEX_OF_password+salt", "salt": "abc123", "first_name": "Ofer", "last_name":"Haviv"},
 	{ "username": "guy", "passHash": "SHA256_HEX_OF_password+salt", "salt": "abc123", "first_name": "Guy", "last_name":"Haviv"}
   ]
 }
