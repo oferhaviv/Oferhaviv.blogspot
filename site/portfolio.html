@@ -1,0 +1,196 @@
+<div class="calc-box" dir="rtl" style="text-align:right">
+  <h2>אזור אישי</h2>
+
+  <!-- LOGIN -->
+  <div id="loginView">
+    <div class="calc-row">
+      <label for="username">שם משתמש</label>
+      <input id="username" type="text" autocomplete="username" />
+    </div>
+
+    <div class="calc-row">
+      <label for="password">סיסמה</label>
+      <input id="password" type="password" autocomplete="current-password" />
+    </div>
+
+    <button id="loginBtn" class="calc-btn">כניסה</button>
+
+    <div id="loginMsg" class="calc-results" style="display:none; margin-top:12px"></div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashView" style="display:none">
+    <div id="dashMsg" class="calc-results" style="display:block"></div>
+
+    <div style="margin-top:12px">
+      <button id="logoutBtn" class="calc-btn calc-btn-secondary">התנתקות</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  const USERS_URL = "https://oferhaviv.github.io/Oferhaviv.blogspot/db/users.json";
+  const PORTFOLIO_URL = "https://oferhaviv.github.io/Oferhaviv.blogspot/db/portfolio.json";
+
+  const loginView = document.getElementById("loginView");
+  const dashView = document.getElementById("dashView");
+
+  const usernameEl = document.getElementById("username");
+  const passwordEl = document.getElementById("password");
+
+  const loginBtn = document.getElementById("loginBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  const loginMsg = document.getElementById("loginMsg");
+  const dashMsg = document.getElementById("dashMsg");
+
+  function showLoginMessage(text) {
+    loginMsg.style.display = "block";
+    loginMsg.textContent = text;
+  }
+
+  function clearLoginMessage() {
+    loginMsg.style.display = "none";
+    loginMsg.textContent = "";
+  }
+
+  function setBusy(isBusy) {
+    loginBtn.disabled = !!isBusy;
+    loginBtn.textContent = isBusy ? "בודק..." : "כניסה";
+  }
+
+  async function fetchJson(url) {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return await res.json();
+  }
+
+  function toHex(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let hex = "";
+    for (let i = 0; i < bytes.length; i++) {
+      hex += bytes[i].toString(16).padStart(2, "0");
+    }
+    return hex;
+  }
+
+  async function sha256Hex(str) {
+    const enc = new TextEncoder().encode(str);
+    const hash = await crypto.subtle.digest("SHA-256", enc);
+    return toHex(hash);
+  }
+
+  function saveSession(username) {
+    sessionStorage.setItem("portfolio_username", username);
+  }
+
+  function loadSession() {
+    return sessionStorage.getItem("portfolio_username");
+  }
+
+  function clearSession() {
+    sessionStorage.removeItem("portfolio_username");
+  }
+
+  async function getUserByUsername(username) {
+    const db = await fetchJson(USERS_URL);
+    const users = (db && db.users) ? db.users : [];
+    return users.find(u => (u.username || "").toLowerCase() === (username || "").toLowerCase()) || null;
+  }
+
+  async function countHoldings(ownerUsername) {
+    const db = await fetchJson(PORTFOLIO_URL);
+    const holdings = (db && db.holdings) ? db.holdings : [];
+    return holdings.filter(h => (h.owner || "").toLowerCase() === (ownerUsername || "").toLowerCase()).length;
+  }
+
+  async function renderDashboard(user) {
+    const count = await countHoldings(user.username);
+    dashMsg.textContent = `שלום ${user.first_name || user.username} 👋 יש לך ${count} holdings.`;
+    loginView.style.display = "none";
+    dashView.style.display = "block";
+  }
+
+  async function tryAutoLogin() {
+    const u = loadSession();
+    if (!u) return;
+
+    try {
+      const user = await getUserByUsername(u);
+      if (!user) {
+        clearSession();
+        return;
+      }
+      await renderDashboard(user);
+    } catch (e) {
+      // אם יש שגיאת רשת/JSON – נשאר במסך התחברות
+      clearSession();
+    }
+  }
+
+  loginBtn.addEventListener("click", async function () {
+    clearLoginMessage();
+
+    const username = (usernameEl.value || "").trim();
+    const password = (passwordEl.value || "");
+
+    if (!username || !password) {
+      showLoginMessage("נא למלא שם משתמש וסיסמה.");
+      return;
+    }
+
+    setBusy(true);
+
+    try {
+      const user = await getUserByUsername(username);
+      if (!user) {
+        showLoginMessage("שם משתמש או סיסמה שגויים.");
+        return;
+      }
+
+      const salt = user.salt || "";
+      const expectedHash = (user.passHash || "").toLowerCase();
+
+      // בדיקה: SHA256(password + salt)
+      const actualHash = (await sha256Hex(password + salt)).toLowerCase();
+
+      if (!expectedHash || expectedHash === "sha256_hex_of_password+salt") {
+        showLoginMessage("שגיאה: passHash בקובץ users.json הוא placeholder. עדכן אותו לערך אמיתי.");
+        return;
+      }
+
+      if (actualHash !== expectedHash) {
+        showLoginMessage("שם משתמש או סיסמה שגויים.");
+        return;
+      }
+
+      saveSession(user.username);
+      await renderDashboard(user);
+    } catch (e) {
+      console.error(e);
+      showLoginMessage("שגיאה בטעינת הנתונים. בדוק שה-JSON תקין ושיש גישה לקבצים.");
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  // Enter = login
+  passwordEl.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") loginBtn.click();
+  });
+
+  logoutBtn.addEventListener("click", function () {
+    clearSession();
+    dashView.style.display = "none";
+    loginView.style.display = "block";
+    passwordEl.value = "";
+    usernameEl.focus();
+  });
+
+  // init
+  tryAutoLogin();
+})();
+</script>
