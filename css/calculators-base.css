@@ -601,3 +601,44 @@
     background: #3b82f6;
     color: #ffffff;
   }
+
+/* ===== תוצאות מחשבון – מבנה קריא ===== */
+
+.calc-results {
+    margin-top: 12px;
+    font-size: 14px;
+}
+
+/* כל שורת תוצאה */
+.result-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+/* צד ימין – התיאור */
+.result-label {
+    flex: 0 0 45%;
+    color: #cbd5e1;
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* צד שמאל – הערך */
+.result-value {
+    flex: 0 0 55%;
+    text-align: left;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* מספרים / דולר / סימולים – תמיד LTR */
+.value-ltr {
+    direction: ltr;
+    unicode-bidi: isolate;
+    white-space: nowrap;
+}
