@@ -704,3 +704,26 @@
 .rr-3p .rr-dot {
     background: #10b981;
 }
+/* טקסט יחס סיכון/סיכוי באקורדיון */
+.rr-text {
+    font-weight: 500;
+    margin-inline-end: 4px;
+}
+
+/* צבעים לפי קטגוריה */
+.rr-text.rr-1 {
+    color: #ef4444;
+}
+/* אדום */
+.rr-text.rr-15 {
+    color: #f59e0b;
+}
+/* צהוב */
+.rr-text.rr-2 {
+    color: #22c55e;
+}
+/* ירוק */
+.rr-text.rr-3p {
+    color: #10b981;
+}
+/* ירוק חזק */
