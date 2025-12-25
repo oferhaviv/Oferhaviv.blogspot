@@ -124,6 +124,9 @@ function fetchMarketPrice() {
     var rr1 = tp1Percent > 0 && slPercent > 0 ? (tp1Percent / slPercent) : NaN;
     var rr2 = tp2Percent > 0 && slPercent > 0 ? (tp2Percent / slPercent) : NaN;
 
+    setRRBadge(rr1, "rr1Badge", "rr1Text");
+    setRRBadge(rr2, "rr2Badge", "rr2Text");
+    /*
     const cat1 = rrCategory(rr1);
     const badge1 = document.getElementById("rr1Badge");
     const txt1 = document.getElementById("rr1Text");
@@ -142,7 +145,8 @@ function fetchMarketPrice() {
         badge2.classList.remove("rr-1", "rr-15", "rr-2", "rr-3p");
         badge2.classList.add(cat2.cls);
         txt2.innerText = cat2.text;
-    }
+      }
+    */
     document.getElementById('outSymbol').innerText = symbol;
 
     document.getElementById('totalCost').innerText   = formatMoney(totalCost);
@@ -210,4 +214,17 @@ function rrCategory(rr) {
     if (rr < 2.0) return { cls: "rr-15", text: "1:1.5" };
     if (rr < 3.0) return { cls: "rr-2", text: "1:2" };
     return { cls: "rr-3p", text: "1:3+" };
+}
+
+function setRRBadge(rr, badgeId, textId) {
+    const cat = rrCategory(rr);
+    const badgeEl = document.getElementById(badgeId);
+    const textEl = document.getElementById(textId);
+
+    // אם אחד מהם לא קיים בדף – פשוט לא עושים כלום
+    if (!badgeEl || !textEl) return;
+
+    badgeEl.classList.remove("rr-1", "rr-15", "rr-2", "rr-3p");
+    badgeEl.classList.add(cat.cls);
+    textEl.textContent = cat.text;
 }
