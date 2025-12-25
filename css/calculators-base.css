@@ -138,6 +138,7 @@
   .post-body {
     background: #121212 !important;
     padding: 20px !important;
+    padding-top: 8px !important;
     border-radius: 12px !important;
     color: #e5e5e5 !important;
   }
@@ -243,10 +244,12 @@
   }
 
   /* כותרת הפוסט */
-  .post-title,
-  .post-title a {
+.post-title,
+.post-title a {
+    margin-top: 0 !important;
+    margin-bottom: 8px !important;
     color: #ffffff !important;
-  }
+}
 
   /* קישורים */
   a,

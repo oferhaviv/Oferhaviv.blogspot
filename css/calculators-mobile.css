@@ -50,6 +50,7 @@
   }
 
   .post-outer {
+    margin-top: 0 !important;
     padding: 16px !important;
   }
 
