@@ -138,9 +138,6 @@ function fetchMarketPrice() {
     document.getElementById('tp2Profit').innerText   = formatMoney(tp2Profit);
     document.getElementById('tp2Percent').innerText  = formatPercent(tp2Percent);
 
-    document.getElementById('rr1').innerText = formatRatio(rr1);
-    document.getElementById('rr2').innerText = formatRatio(rr2);
-
     document.getElementById('slLoss').innerText    = formatMoney(slLoss);
     document.getElementById('slPercent').innerText = formatPercent(slPercent);
 
