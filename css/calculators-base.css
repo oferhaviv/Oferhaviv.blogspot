@@ -126,6 +126,19 @@
     flex: 1;
   }
 
+/* הסתרת Share של Blogger */
+.share-buttons,
+.post-share-buttons,
+.blog-post-share {
+    display: none !important;
+}
+/* ביטול כותרת הפוסט – רק במחשבונים */
+.post-title,
+.post-title-container {
+    display: none !important;
+}
+
+
   /* === Dark Mode לכל הבלוג === */
 
   /* רקע ראשי */
