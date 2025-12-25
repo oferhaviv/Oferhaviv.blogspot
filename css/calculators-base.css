@@ -642,3 +642,65 @@
     unicode-bidi: isolate;
     white-space: nowrap;
 }
+
+/* תגית יחס סיכון/סיכוי */
+.rr-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 1;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+.rr-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* 4 קטגוריות */
+.rr-1 {
+    background: rgba(239,68,68,.12);
+    border-color: rgba(239,68,68,.35);
+    color: #fecaca;
+}
+
+.rr-15 {
+    background: rgba(245,158,11,.12);
+    border-color: rgba(245,158,11,.35);
+    color: #fde68a;
+}
+
+.rr-2 {
+    background: rgba(34,197,94,.12);
+    border-color: rgba(34,197,94,.35);
+    color: #bbf7d0;
+}
+
+.rr-3p {
+    background: rgba(16,185,129,.12);
+    border-color: rgba(16,185,129,.35);
+    color: #a7f3d0;
+}
+
+.rr-1 .rr-dot {
+    background: #ef4444;
+}
+
+.rr-15 .rr-dot {
+    background: #f59e0b;
+}
+
+.rr-2 .rr-dot {
+    background: #22c55e;
+}
+
+.rr-3p .rr-dot {
+    background: #10b981;
+}

@@ -59,8 +59,10 @@
   // ==== מחשבון סיכון/סיכוי (עם Finnhub כמו אצלך) ====
   const FINNHUB_TOKEN = "d4b0dq9r01qp275hrhfgd4b0dq9r01qp275hrhg0";
 
-  function fetchMarketPrice() {
-    const symbol = document.getElementById('risk_symbol').value.trim();
+function fetchMarketPrice() {
+    const el = document.getElementById('risk_symbol');
+    const symbol = el.value.trim().toUpperCase();
+    el.value = symbol;
     if (!symbol) {
       alert("נא להזין קודם סימול (לדוגמה AAPL).");
       return;
@@ -96,7 +98,8 @@
     var tp2    = parseFloat(document.getElementById('risk_tp2').value);
     var sl     = parseFloat(document.getElementById('risk_sl').value);
     var amount = parseFloat(document.getElementById('risk_amount').value);
-    var symbol = document.getElementById('risk_symbol').value || "-";
+    var symbol = (document.getElementById('risk_symbol').value || "-").trim().toUpperCase();
+    document.getElementById('risk_symbol').value = symbol;
 
     if (!buy || !amount || !tp1 || !tp2 || !sl) {
       alert("נא למלא את כל השדות המספריים (קניה, TP1, TP2, סטופ, כמות).");
@@ -121,6 +124,25 @@
     var rr1 = tp1Percent > 0 && slPercent > 0 ? (tp1Percent / slPercent) : NaN;
     var rr2 = tp2Percent > 0 && slPercent > 0 ? (tp2Percent / slPercent) : NaN;
 
+    const cat1 = rrCategory(rr1);
+    const badge = document.getElementById("rrBadge");
+    const txt = document.getElementById("rrText");
+
+    if (badge && txt) {
+        badge.classList.remove("rr-1", "rr-15", "rr-2", "rr-3p");
+        badge.classList.add(cat1.cls);
+        txt.innerText = cat1.text;
+    }
+
+    const cat2 = rrCategory(rr2);
+    const badge = document.getElementById("rrBadge");
+    const txt = document.getElementById("rrText");
+
+    if (badge && txt) {
+        badge.classList.remove("rr-1", "rr-15", "rr-2", "rr-3p");
+        badge.classList.add(cat2.cls);
+        txt.innerText = cat2.text;
+    }
     document.getElementById('outSymbol').innerText = symbol;
 
     document.getElementById('totalCost').innerText   = formatMoney(totalCost);
@@ -180,3 +202,12 @@ document.addEventListener('DOMContentLoaded', function () {
     initCalcHomeAccordions(document);
   }
 });
+
+function rrCategory(rr) {
+    if (!isFinite(rr) || rr <= 0) return { cls: "rr-1", text: "1:1" };
+
+    if (rr < 1.5) return { cls: "rr-1", text: "1:1" };
+    if (rr < 2.0) return { cls: "rr-15", text: "1:1.5" };
+    if (rr < 3.0) return { cls: "rr-2", text: "1:2" };
+    return { cls: "rr-3p", text: "1:3+" };
+}
