@@ -125,23 +125,23 @@ function fetchMarketPrice() {
     var rr2 = tp2Percent > 0 && slPercent > 0 ? (tp2Percent / slPercent) : NaN;
 
     const cat1 = rrCategory(rr1);
-    const badge = document.getElementById("rrBadge");
-    const txt = document.getElementById("rrText");
+    const badge1 = document.getElementById("rrBadge");
+    const txt1 = document.getElementById("rrText");
 
-    if (badge && txt) {
-        badge.classList.remove("rr-1", "rr-15", "rr-2", "rr-3p");
-        badge.classList.add(cat1.cls);
-        txt.innerText = cat1.text;
+    if (badge1 && txt1) {
+        badge1.classList.remove("rr-1", "rr-15", "rr-2", "rr-3p");
+        badge1.classList.add(cat1.cls);
+        txt1.innerText = cat1.text;
     }
 
     const cat2 = rrCategory(rr2);
-    const badge = document.getElementById("rrBadge");
-    const txt = document.getElementById("rrText");
+    const badge2 = document.getElementById("rrBadge");
+    const txt2 = document.getElementById("rrText");
 
-    if (badge && txt) {
-        badge.classList.remove("rr-1", "rr-15", "rr-2", "rr-3p");
-        badge.classList.add(cat2.cls);
-        txt.innerText = cat2.text;
+    if (badge2 && txt2) {
+        badge2.classList.remove("rr-1", "rr-15", "rr-2", "rr-3p");
+        badge2.classList.add(cat2.cls);
+        txt2.innerText = cat2.text;
     }
     document.getElementById('outSymbol').innerText = symbol;
 
