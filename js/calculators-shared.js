@@ -125,8 +125,8 @@ function fetchMarketPrice() {
     var rr2 = tp2Percent > 0 && slPercent > 0 ? (tp2Percent / slPercent) : NaN;
 
     const cat1 = rrCategory(rr1);
-    const badge1 = document.getElementById("rrBadge");
-    const txt1 = document.getElementById("rrText");
+    const badge1 = document.getElementById("rr1Badge");
+    const txt1 = document.getElementById("rr1Text");
 
     if (badge1 && txt1) {
         badge1.classList.remove("rr-1", "rr-15", "rr-2", "rr-3p");
@@ -135,8 +135,8 @@ function fetchMarketPrice() {
     }
 
     const cat2 = rrCategory(rr2);
-    const badge2 = document.getElementById("rrBadge");
-    const txt2 = document.getElementById("rrText");
+    const badge2 = document.getElementById("rr2Badge");
+    const txt2 = document.getElementById("rr1Text");
 
     if (badge2 && txt2) {
         badge2.classList.remove("rr-1", "rr-15", "rr-2", "rr-3p");
