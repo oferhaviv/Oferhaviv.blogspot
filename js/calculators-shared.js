@@ -217,5 +217,6 @@ function setRRBadge(rr, badgeId, textId) {
 
     badgeEl.classList.remove("rr-1", "rr-15", "rr-2", "rr-3p");
     badgeEl.classList.add(cat.cls);
-    textEl.textContent = cat.text;
+    textEl.textContent = "1:" + formatRatio(rr);
+
 }
