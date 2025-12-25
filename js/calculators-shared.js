@@ -126,27 +126,7 @@ function fetchMarketPrice() {
 
     setRRBadge(rr1, "rr1Badge", "rr1Text");
     setRRBadge(rr2, "rr2Badge", "rr2Text");
-    //*
-    const cat1 = rrCategory(rr1);
-    const badge1 = document.getElementById("rr1Badge");
-    const txt1 = document.getElementById("rr1Text");
-
-    if (badge1 && txt1) {
-        badge1.classList.remove("rr-1", "rr-15", "rr-2", "rr-3p");
-        badge1.classList.add(cat1.cls);
-        txt1.innerText = cat1.text;
-    }
-
-    const cat2 = rrCategory(rr2);
-    const badge2 = document.getElementById("rr2Badge");
-    const txt2 = document.getElementById("rr1Text");
-
-    if (badge2 && txt2) {
-        badge2.classList.remove("rr-1", "rr-15", "rr-2", "rr-3p");
-        badge2.classList.add(cat2.cls);
-        txt2.innerText = cat2.text;
-      }
-    */
+    
     document.getElementById('outSymbol').innerText = symbol;
 
     document.getElementById('totalCost').innerText   = formatMoney(totalCost);
