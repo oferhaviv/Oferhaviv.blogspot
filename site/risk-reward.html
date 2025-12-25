@@ -1,6 +1,6 @@
 <div class="calc-box" id="calcRisk">
   <h2>מחשבון סיכון / סיכוי</h2>
-  <small dir="ltr">Version 1.132 debug</small>
+  <small dir="ltr">Version 1.133 debug</small>
   <div class="calc-section">
     <div class="calc-row">
       <label for="risk_symbol">סימול (אופציונלי):</label>
@@ -48,103 +48,105 @@
   </button>
 
 <div class="calc-results" id="riskResults" style="display:none;">
-  <div class="results-grid">
+    <div class="results-grid">
 
-    <div class="result-row">
-        <div class="result-label">סימול</div>
-        <div class="result-value"><span class="value-ltr" id="outSymbol">-</span></div>
-    </div>
-
-    <div class="result-row">
-      <div class="result-label">עלות כוללת</div>
-      <div class="result-value">
-        <span class="value-ltr">
-          $<span id="totalCost">0.00</span>
-        </span>
-        <span class="value-sub">
-          | <span id="totalAmount">0 מניות</span>
-        </span>
-      </div>
-    </div>
-
-    <div class="result-separator"></div>
-
-    <div class="result-row">
-      <div class="result-label">TP1 – רווח נומינלי</div>
-      <div class="result-value">
-        <span class="value-ltr">
-          $<span id="tp1Profit">0.00</span>
-        </span>
-        <span class="value-sub-ltr">
-          (<span id="tp1Percent">0.00</span>%)
-        </span>
-      </div>
-    </div>
-
-    <div class="result-row">
-      <div class="result-label">TP2 – רווח נומינלי</div>
-      <div class="result-value">
-        <span class="value-ltr">
-          $<span id="tp2Profit">0.00</span>
-        </span>
-        <span class="value-sub-ltr">
-          (<span id="tp2Percent">0.00</span>%)
-        </span>
-      </div>
-    </div>
-
-    <div class="result-row">
-      <div class="result-label">יחס סיכון/סיכוי (TP1)</div>
-      <div class="result-value">
-        <span class="value-ltr">
-          1 : <span id="rr1">0.00</span>
-        </span>
-      </div>
-    </div>
-
-    <div class="result-row">
-      <div class="result-label">יחס סיכון/סיכוי (TP2)</div>
-      <div class="result-value">
-        <span class="value-ltr">
-          1 : <span id="rr2">0.00</span>
-        </span>
-      </div>
-    </div>
-
-    <div class="result-separator"></div>
-
-    <div class="result-row result-row-stop">
-      <div class="result-label">סטופ לוס – הפסד מקסימלי</div>
-      <div class="result-value">
-        <span class="value-ltr">
-          $<span id="slLoss">0.00</span>
-        </span>
-        <div class="value-sub-ltr">
-          (<span id="slPercent">0.00</span>%)
+        <div class="result-row">
+            <div class="result-label">סימול</div>
+            <div class="result-value"><span class="value-ltr" id="outSymbol">-</span></div>
         </div>
-      </div>
+
+        <div class="result-row">
+            <div class="result-label">עלות</div>
+            <div class="result-value">
+                <span class="value-ltr">
+                    $<span id="totalCost">0.00</span>
+                </span>
+                <span class="value-sub">
+                    | <span id="totalAmount">0 מניות</span>
+                </span>
+            </div>
+        </div>
+
+        <div class="result-separator"></div>
+
+        <div class="result-row result-row-stop">
+            <div class="result-label">סטופ</div>
+            <div class="result-value">
+                <span class="value-ltr">
+                    $<span id="slLoss">0.00</span>
+                </span>
+                <div class="value-sub-ltr">
+                    (<span id="slPercent">0.00</span>%)
+                </div>
+            </div>
+        </div>
+        <div class="result-separator"></div>
+
+        <div class="result-row">
+            <div class="result-label">יעד 1</div>
+            <div class="result-value">
+                <span class="value-ltr">
+                    $<span id="tp1Profit">0.00</span>
+                </span>
+                <span class="value-sub-ltr">
+                    (<span id="tp1Percent">0.00</span>%)
+                </span>
+            </div>
+        </div>
+        <div class="result-separator"></div>
+
+        <div class="result-row">
+            <div class="result-label">יעד 2</div>
+            <div class="result-value">
+                <span class="value-ltr">
+                    $<span id="tp2Profit">0.00</span>
+                </span>
+                <span class="value-sub-ltr">
+                    (<span id="tp2Percent">0.00</span>%)
+                </span>
+            </div>
+        </div>
+        <div class="result-separator"></div>
+
+        <div class="result-row">
+            <div class="result-label">יעד 1 יחס סיכון/סיכוי</div>
+            <div class="result-value">
+                <span class="value-ltr">
+                    1 : <span id="rr1">0.00</span>
+                </span>
+            </div>
+        </div>
+        <div class="result-separator"></div>
+
+        <div class="result-row">
+            <div class="result-label">יעד 2 יחס סיכון/סיכוי</div>
+            <div class="result-value">
+                <span class="value-ltr">
+                    1 : <span id="rr2">0.00</span>
+                </span>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <input type="checkbox" id="risk-rr-toggle">
+            <label for="risk-rr-toggle" class="accordion-label">
+                מה זה יחס סיכון/סיכוי?
+            </label>
+
+            <div class="accordion-content">
+                <p>
+                    יחס סיכון/סיכוי משווה בין כמה אתה מוכן להפסיד בעסקה
+                    לבין כמה אתה שואף להרוויח.
+                </p>
+                <ul>
+                    <li>1:1 – מסכן 1$ כדי להרוויח 1$ (בסיסי).</li>
+                    <li>1:1.5 – מסכן 1$ כדי להרוויח 1.5$ (נחשב טוב).</li>
+                    <li>1:2 – מסכן 1$ כדי להרוויח 2$ (מאוד טוב).</li>
+                    <li>1:3+ – מסכן 1$ כדי להרוויח 3$ ומעלה (מצוין לסווינג).</li>
+                </ul>
+                <p>
+                    יחס גבוה יותר אומר שאתה יכול לטעות יותר ועדיין להיות רווחי לאורך זמן.
+                </p>
+            </div>
+        </div>
     </div>
-
-<div class="accordion">
-  <input type="checkbox" id="risk-rr-toggle">
-  <label for="risk-rr-toggle" class="accordion-label">
-    מה זה יחס סיכון/סיכוי?
-  </label>
-
-  <div class="accordion-content">
-    <p>
-      יחס סיכון/סיכוי משווה בין כמה אתה מוכן להפסיד בעסקה
-      לבין כמה אתה שואף להרוויח.
-    </p>
-    <ul>
-      <li>1:1 – מסכן 1$ כדי להרוויח 1$ (בסיסי).</li>
-      <li>1:1.5 – מסכן 1$ כדי להרוויח 1.5$ (נחשב טוב).</li>
-      <li>1:2 – מסכן 1$ כדי להרוויח 2$ (מאוד טוב).</li>
-      <li>1:3+ – מסכן 1$ כדי להרוויח 3$ ומעלה (מצוין לסווינג).</li>
-    </ul>
-    <p>
-      יחס גבוה יותר אומר שאתה יכול לטעות יותר ועדיין להיות רווחי לאורך זמן.
-    </p>
-  </div>
-</div>
-</div>

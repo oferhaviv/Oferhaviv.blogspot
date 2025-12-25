@@ -605,8 +605,8 @@
 /* ===== תוצאות מחשבון – מבנה קריא ===== */
 
 .calc-results {
-    margin-top: 12px;
-    font-size: 14px;
+    margin-top: 8px;
+    font-size: 12px;
 }
 
 /* כל שורת תוצאה */
@@ -632,7 +632,7 @@
     text-align: left;
     display: flex;
     justify-content: flex-end;
-    gap: 8px;
+    gap: 12px;
     flex-wrap: wrap;
 }
 
