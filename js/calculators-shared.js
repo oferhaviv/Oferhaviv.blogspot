@@ -126,7 +126,7 @@ function fetchMarketPrice() {
 
     setRRBadge(rr1, "rr1Badge", "rr1Text");
     setRRBadge(rr2, "rr2Badge", "rr2Text");
-    /*
+    //*
     const cat1 = rrCategory(rr1);
     const badge1 = document.getElementById("rr1Badge");
     const txt1 = document.getElementById("rr1Text");
@@ -215,7 +215,18 @@ function rrCategory(rr) {
     if (rr < 3.0) return { cls: "rr-2", text: "1:2" };
     return { cls: "rr-3p", text: "1:3+" };
 }
+function setRRBadge(rr, badgeId, textId) {
+    const cat = rrCategory(rr);
+    const badgeEl = document.getElementById(badgeId);
+    const textEl = document.getElementById(textId);
 
+    // אם אחד מהם לא קיים בדף – פשוט לא עושים כלום
+    if (!badgeEl || !textEl) return;
+
+    badgeEl.classList.remove("rr-1", "rr-15", "rr-2", "rr-3p");
+    badgeEl.classList.add(cat.cls);
+    textEl.textContent = cat.text;
+}
 function setRRBadge(rr, badgeId, textId) {
     const cat = rrCategory(rr);
     const badgeEl = document.getElementById(badgeId);
