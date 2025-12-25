@@ -5,3 +5,5 @@
 *.vsidx
 *.wsuo
 *.sqlite
+# Visual Studio cache/options directory
+.vs/
