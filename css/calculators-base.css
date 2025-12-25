@@ -1,5 +1,6 @@
-.calc-back-btn{
-    transform: scale(0.8);
+.calc-back-btn {
+    width: 36px;
+    height: 36px;
 }
 .calc-box {
     max-width: 520px;
