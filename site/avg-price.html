@@ -1,6 +1,6 @@
 <div class="calc-box" id="avgCalc">
     <h2>מחשבון מחיר ממוצע למניה</h2>
-    <small dir="ltr"><small><small>Version 1.003 debug</small></small></small>
+    <small dir="ltr"><small><small>Version 1.004 debug</small></small></small>
 
     <!-- נתונים קיימים -->
     <div class="calc-section">
@@ -42,30 +42,38 @@
 
                 <div class="result-label">מחיר משוקלל:</div>
                 <div class="result-value">
-                    $<span id="avg_avgPrice">0.00</span>
+                    <span class="value-ltr">$<span id="avg_avgPrice">0.00</span></span>
                 </div>
             </div>
 
             <div class="result-row">
                 <div class="result-label">תוספת השקעה:</div>
-                <div class="result-value">$<span id="avg_requiredInvestment">0.00</span></div>
+                <div class="result-value">
+                    <span class="value-ltr">$<span id="avg_requiredInvestment">0.00</span></span>
+                </div>
             </div>
 
             <div class="result-row">
                 <div class="result-label">כמות יחידות חדשה:</div>
-                <div class="result-value"><span id="avg_totalQty">0</span></div>
+                <div class="result-value">
+                    <span class="value-ltr"><span id="avg_totalQty">0</span></span>
+                </div>
             </div>
 
-            <hr />
+            <div class="result-separator"></div>
 
             <div class="result-row">
                 <div class="result-label">מרווח משוער ($):</div>
-                <div class="result-value">$<span id="avg_marginDollar">0.00</span></div>
+                <div class="result-value">
+                    <span class="value-ltr">$<span id="avg_marginDollar">0.00</span></span>
+                </div>
             </div>
 
             <div class="result-row">
                 <div class="result-label">מרווח משוער (%):</div>
-                <div class="result-value"><span id="avg_marginPercent">0.00</span>%</div>
+                <div class="result-value">
+                    <span class="value-ltr"><span id="avg_marginPercent">0.00</span>%</span>
+                </div>
             </div>
             <div class="accordion">
                 <input type="checkbox" id="help-avg">
