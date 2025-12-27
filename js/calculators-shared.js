@@ -327,14 +327,6 @@ function setRRBadge(rr, badgeId, textId) {
             const taxProfiles = mergeByName(serverTaxes, localTaxes);
 
             populateSelect(feeSelect, feeProfiles);
-
-            document.addEventListener("net:fees-updated", function (e) {
-                // לטעון מחדש ואז לבחור בפרופיל החדש
-                initNetProfilesIfPresent?.(); // אם הפונקציה בסקופ, אם לא – תגיד לי ואארגן אותה גלובלית
-                const pick = e?.detail?.pick;
-                if (pick) setTimeout(() => { const s = document.getElementById("net_feeProfile"); if (s) s.value = pick; }, 300);
-            });
-
             populateSelect(taxSelect, taxProfiles);
 
             window.__net_profiles_loaded = true;
