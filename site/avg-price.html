@@ -1,72 +1,73 @@
 <div class="calc-box" id="avgCalc">
-  <h2>מחשבון מחיר ממוצע למניה</h2>
+    <h2>מחשבון מחיר ממוצע למניה</h2>
+    <small dir="ltr"><small><small>Version 1.001 debug</small></small></small>
 
-  <!-- נתונים קיימים -->
-  <div class="calc-section">
-      <div class="calc-row">
+    <!-- נתונים קיימים -->
+    <div class="calc-section">
+        <div class="calc-row">
 
-          <div class="calc-section-title">פוזיציה קיימת</div>
+            <div class="calc-section-title">פוזיציה קיימת</div>
 
-          <div class="calc-row">
-              <label for="avg_existingQty">כמות קיימת:</label>
-              <input id="avg_existingQty" type="number" min="0" step="1" dir="ltr">
-          </div>
+            <div class="calc-row">
+                <label for="avg_existingQty">כמות קיימת:</label>
+                <input id="avg_existingQty" type="number" min="0" step="1" dir="ltr">
+            </div>
 
-          <div class="calc-row">
-              <label for="avg_existingPrice">מחיר קניה ממוצע (ליחידה):</label>
-              <input id="avg_existingPrice" type="number" min="0" step="0.01" dir="ltr">
-          </div>
-      </div>
+            <div class="calc-row">
+                <label for="avg_existingPrice">מחיר קניה ממוצע (ליחידה):</label>
+                <input id="avg_existingPrice" type="number" min="0" step="0.01" dir="ltr">
+            </div>
+        </div>
 
-      <!-- קניה חדשה -->
-      <div class="calc-section">
-          <div class="calc-section-title">קניה חדשה</div>
+        <!-- קניה חדשה -->
+        <div class="calc-section">
+            <div class="calc-section-title">קניה חדשה</div>
 
-          <div class="calc-row">
-              <label for="avg_newQty">כמות חדשה:</label>
-              <input id="avg_newQty" type="number" min="0" step="1" dir="ltr">
-          </div>
+            <div class="calc-row">
+                <label for="avg_newQty">כמות חדשה:</label>
+                <input id="avg_newQty" type="number" min="0" step="1" dir="ltr">
+            </div>
 
-          <div class="calc-row">
-              <label for="avg_newPrice">מחיר קניה חדש (מחיר נוכחי):</label>
-              <input id="avg_newPrice" type="number" min="0" step="0.01" dir="ltr">
-          </div>
-      </div>
+            <div class="calc-row">
+                <label for="avg_newPrice">מחיר קניה חדש (מחיר נוכחי):</label>
+                <input id="avg_newPrice" type="number" min="0" step="0.01" dir="ltr">
+            </div>
+        </div>
 
-      <button class="calc-btn" onclick="calcAvgPrice()">חשב ממוצע</button>
+        <button class="calc-btn" onclick="calcAvgPrice()">חשב ממוצע</button>
 
-      <div class="calc-results" id="avgResults">
-          <p>
-              <strong>השקעה נדרשת:</strong>
-              $<span id="avg_requiredInvestment">0.00</span>
-          </p>
+        <div class="calc-results" id="avgResults">
+            <p>
+                <strong>מחיר ממוצע משוקלל אחרי הקניה:</strong>
+                $<span id="avg_avgPrice">0.00</span>
+            </p>
 
-          <p>
-              <strong>מחיר ממוצע משוקלל אחרי הקניה:</strong>
-              $<span id="avg_avgPrice">0.00</span>
-          </p>
+            <p>
+                <strong>תוספת השקעה:</strong>
+                $<span id="avg_requiredInvestment">0.00</span>
+            </p>
 
-          <p>
-              <strong>כמות יחידות בסוף:</strong>
-              <span id="avg_totalQty">0</span>
-          </p>
+            <p>
+                <strong>כמות יחידות חדשה:</strong>
+                <span id="avg_totalQty">0</span>
+            </p>
 
-          <hr />
+            <hr />
 
-          <p>
-              <strong>מרווח משוער ($):</strong>
-              $<span id="avg_marginDollar">0.00</span>
-          </p>
+            <p>
+                <strong>מרווח משוער ($):</strong>
+                $<span id="avg_marginDollar">0.00</span>
+            </p>
 
-          <p>
-              <strong>מרווח משוער (%):</strong>
-              <span id="avg_marginPercent">0.00</span>%
-          </p>
-      </div>
+            <p>
+                <strong>מרווח משוער (%):</strong>
+                <span id="avg_marginPercent">0.00</span>%
+            </p>
+        </div>
 
-      <div class="help-box">
-          * המרווח מחושב כמרחק בין המחיר הממוצע לאחר הקניה לבין מחיר הקניה החדש (הנוכחי).<br>
-          * ערך חיובי = רווח תיאורטי, ערך שלילי = הפסד תיאורטי.
-      </div>
-  </div>
+        <div class="help-box">
+            * המרווח מחושב כמרחק בין המחיר הממוצע לאחר הקניה לבין מחיר הקניה החדש (הנוכחי).<br>
+            * ערך חיובי = רווח תיאורטי, ערך שלילי = הפסד תיאורטי.
+        </div>
+    </div>
 
