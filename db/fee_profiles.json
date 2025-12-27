@@ -1,0 +1,60 @@
+﻿{
+    "version": 2,
+    "updated_at": "2025-12-27",
+    "profiles": [
+        {
+            "id": "bnhp_us_stocks_digital",
+            "name": "בנק הפועלים – מניות ארה\"ב (דיגיטל)",
+            "currency": "USD",
+            "buy": {
+                "per_share": 0.004,
+                "percent": 0.0,
+                "min": 3.0,
+                "flat": 0.0
+            },
+            "sell": {
+                "per_share": 0.004,
+                "percent": 0.0,
+                "min": 3.0,
+                "flat": 0.0
+            },
+            "discount_percent": 0
+        },
+        {
+            "id": "israel_market_0_08pct_min_2_35_ils",
+            "name": "שוק ישראלי – 0.08% (מינ׳ 2.35₪)",
+            "currency": "ILS",
+            "buy": {
+                "per_share": 0.0,
+                "percent": 0.0008,
+                "min": 2.35,
+                "flat": 0.0
+            },
+            "sell": {
+                "per_share": 0.0,
+                "percent": 0.0008,
+                "min": 2.35,
+                "flat": 0.0
+            },
+            "discount_percent": 0
+        },
+        {
+            "id": "us_market_1cent_per_share_min_7_5_usd",
+            "name": "שוק אמריקאי – $0.01 למניה (מינ׳ $7.5)",
+            "currency": "USD",
+            "buy": {
+                "per_share": 0.01,
+                "percent": 0.0,
+                "min": 7.5,
+                "flat": 0.0
+            },
+            "sell": {
+                "per_share": 0.01,
+                "percent": 0.0,
+                "min": 7.5,
+                "flat": 0.0
+            },
+            "discount_percent": 0
+        }
+    ]
+}

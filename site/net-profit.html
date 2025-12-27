@@ -1,6 +1,6 @@
 <div class="calc-box" id="netCalc">
     <h2>מחשבון רווחים נטו</h2>
-    <small dir="ltr"><small><small>Version 0.001 UI</small></small></small>
+    <small dir="ltr"><small><small>Version 0.003 UI</small></small></small>
 
     <!-- פרטי עסקה -->
     <div class="calc-section">
@@ -188,39 +188,127 @@
         </div>
     </div>
 </div>
-
-<!-- סטאבים זמניים כדי שלא יהיו שגיאות בלחיצה (נחליף ב-JS אמיתי בשלב הבא) -->
 <script>
     (function () {
-        const $ = (id) => document.getElementById(id);
+        "use strict";
 
-        function flashMsg(el, text) {
-            if (!el) return;
-            el.style.display = "block";
-            el.textContent = text;
-            setTimeout(() => { el.style.display = "none"; el.textContent = ""; }, 2500);
+        const FEES_URL = "https://oferhaviv.github.io/Oferhaviv.blogspot/db/fee_profiles.json";
+        const TAX_URL = "https://oferhaviv.github.io/Oferhaviv.blogspot/db/tax_profiles.json";
+
+        // בהמשך נשתמש בזה למיזוג מול localStorage
+        const LS_FEES_KEY = "net_fee_profiles_local";
+        const LS_TAX_KEY = "net_tax_profiles_local";
+
+        const feeSelect = document.getElementById("net_feeProfile");
+        const taxSelect = document.getElementById("net_taxProfile");
+
+        function setSelectStatus(selectEl, text) {
+            if (!selectEl) return;
+            selectEl.innerHTML = "";
+            const opt = document.createElement("option");
+            opt.value = "";
+            opt.textContent = text;
+            selectEl.appendChild(opt);
         }
 
-        $("net_btnAddFeeProfile")?.addEventListener("click", () => {
-            $("net_fee_new_toggle").checked = true;
-            $("net_newFee_name")?.focus();
-        });
+        async function fetchJson(url) {
+            const res = await fetch(url, { cache: "no-store" });
+            if (!res.ok) throw new Error("HTTP " + res.status + " for " + url);
+            return await res.json();
+        }
 
-        $("net_btnAddTaxProfile")?.addEventListener("click", () => {
-            $("net_tax_new_toggle").checked = true;
-            $("net_newTax_name")?.focus();
-        });
+        function readLocalProfiles(key) {
+            try {
+                const raw = localStorage.getItem(key);
+                if (!raw) return [];
+                const parsed = JSON.parse(raw);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+                return [];
+            }
+        }
 
-        $("net_btnSaveFeeProfile")?.addEventListener("click", () => {
-            flashMsg($("net_feeProfileMsg"), "סטאב: בשלב הבא נשמור את הפרופיל ב-localStorage ונרענן את הרשימה.");
-        });
+        function mergeByName(serverArr, localArr) {
+            const out = [];
+            const seen = new Set();
 
-        $("net_btnSaveTaxProfile")?.addEventListener("click", () => {
-            flashMsg($("net_taxProfileMsg"), "סטאב: בשלב הבא נשמור את פרופיל המס ב-localStorage ונרענן את הרשימה.");
-        });
+            // קודם פרופילי שרת
+            (serverArr || []).forEach(p => {
+                const name = (p && p.name) ? String(p.name).trim() : "";
+                if (!name || seen.has(name.toLowerCase())) return;
+                seen.add(name.toLowerCase());
+                out.push(p);
+            });
 
-        $("net_btnCalc")?.addEventListener("click", () => {
-            alert("סטאב: בשלב הבא נחבר טעינת JSON + localStorage + חישוב מלא והצגת תוצאות.");
-        });
+            // אחר כך מקומיים (בלי לדרוס — אם יש כפילות נדלג)
+            (localArr || []).forEach(p => {
+                const name = (p && p.name) ? String(p.name).trim() : "";
+                if (!name || seen.has(name.toLowerCase())) return;
+                seen.add(name.toLowerCase());
+                out.push(p);
+            });
+
+            return out;
+        }
+
+        function populateSelect(selectEl, profiles) {
+            if (!selectEl) return;
+
+            selectEl.innerHTML = "";
+
+            const first = document.createElement("option");
+            first.value = "";
+            first.textContent = "בחר...";
+            selectEl.appendChild(first);
+
+            profiles.forEach(p => {
+                const opt = document.createElement("option");
+                opt.value = p.id || p.name; // נשתמש ב-id אם יש
+                opt.textContent = p.name;
+                selectEl.appendChild(opt);
+            });
+
+            // לבחור אוטומטית את הראשון האמיתי אם יש
+            if (profiles.length > 0) selectEl.value = (profiles[0].id || profiles[0].name);
+        }
+
+        // נשמור בזיכרון לשלב החישוב
+        let feeProfiles = [];
+        let taxProfiles = [];
+
+        async function initNetProfiles() {
+            setSelectStatus(feeSelect, "טוען פרופילי עמלות...");
+            setSelectStatus(taxSelect, "טוען פרופילי מס...");
+
+            try {
+                const [feesDb, taxDb] = await Promise.all([
+                    fetchJson(FEES_URL),
+                    fetchJson(TAX_URL)
+                ]);
+
+                const serverFees = (feesDb && feesDb.profiles) ? feesDb.profiles : [];
+                const serverTaxes = (taxDb && taxDb.profiles) ? taxDb.profiles : [];
+
+                const localFees = readLocalProfiles(LS_FEES_KEY);
+                const localTaxes = readLocalProfiles(LS_TAX_KEY);
+
+                feeProfiles = mergeByName(serverFees, localFees);
+                taxProfiles = mergeByName(serverTaxes, localTaxes);
+
+                populateSelect(feeSelect, feeProfiles);
+                populateSelect(taxSelect, taxProfiles);
+
+                // חשיפה ל-debug (אפשר למחוק אחר כך)
+                window.__net_feeProfiles = feeProfiles;
+                window.__net_taxProfiles = taxProfiles;
+
+            } catch (e) {
+                console.error(e);
+                setSelectStatus(feeSelect, "שגיאה בטעינת פרופילי עמלות");
+                setSelectStatus(taxSelect, "שגיאה בטעינת פרופילי מס");
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", initNetProfiles);
     })();
 </script>

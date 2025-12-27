@@ -1,0 +1,11 @@
+﻿{
+    "version": 1,
+    "updated_at": "2025-12-27",
+    "profiles": [
+        {
+            "id": "capital_gains_25",
+            "name": "רווח הון 25%",
+            "tax_percent": 25
+        }
+    ]
+}
