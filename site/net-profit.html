@@ -1,6 +1,6 @@
 <div class="calc-box" id="netCalc">
     <h2>מחשבון רווחים נטו</h2>
-    <small dir="ltr"><small><small>Version 0.003 UI</small></small></small>
+    <small dir="ltr"><small><small>Version 0.004 UI</small></small></small>
 
     <!-- פרטי עסקה -->
     <div class="calc-section">
@@ -195,12 +195,10 @@
         const FEES_URL = "https://oferhaviv.github.io/Oferhaviv.blogspot/db/fee_profiles.json";
         const TAX_URL = "https://oferhaviv.github.io/Oferhaviv.blogspot/db/tax_profiles.json";
 
-        // בהמשך נשתמש בזה למיזוג מול localStorage
         const LS_FEES_KEY = "net_fee_profiles_local";
         const LS_TAX_KEY = "net_tax_profiles_local";
 
-        const feeSelect = document.getElementById("net_feeProfile");
-        const taxSelect = document.getElementById("net_taxProfile");
+        function $(id) { return document.getElementById(id); }
 
         function setSelectStatus(selectEl, text) {
             if (!selectEl) return;
@@ -232,7 +230,6 @@
             const out = [];
             const seen = new Set();
 
-            // קודם פרופילי שרת
             (serverArr || []).forEach(p => {
                 const name = (p && p.name) ? String(p.name).trim() : "";
                 if (!name || seen.has(name.toLowerCase())) return;
@@ -240,7 +237,6 @@
                 out.push(p);
             });
 
-            // אחר כך מקומיים (בלי לדרוס — אם יש כפילות נדלג)
             (localArr || []).forEach(p => {
                 const name = (p && p.name) ? String(p.name).trim() : "";
                 if (!name || seen.has(name.toLowerCase())) return;
@@ -263,12 +259,11 @@
 
             profiles.forEach(p => {
                 const opt = document.createElement("option");
-                opt.value = p.id || p.name; // נשתמש ב-id אם יש
+                opt.value = p.id || p.name;
                 opt.textContent = p.name;
                 selectEl.appendChild(opt);
             });
 
-            // לבחור אוטומטית את הראשון האמיתי אם יש
             if (profiles.length > 0) selectEl.value = (profiles[0].id || profiles[0].name);
         }
 
@@ -277,6 +272,9 @@
         let taxProfiles = [];
 
         async function initNetProfiles() {
+            const feeSelect = $("net_feeProfile");
+            const taxSelect = $("net_taxProfile");
+
             setSelectStatus(feeSelect, "טוען פרופילי עמלות...");
             setSelectStatus(taxSelect, "טוען פרופילי מס...");
 
@@ -298,9 +296,11 @@
                 populateSelect(feeSelect, feeProfiles);
                 populateSelect(taxSelect, taxProfiles);
 
-                // חשיפה ל-debug (אפשר למחוק אחר כך)
+                // Debug
                 window.__net_feeProfiles = feeProfiles;
                 window.__net_taxProfiles = taxProfiles;
+                console.log("Loaded fee profiles:", feeProfiles);
+                console.log("Loaded tax profiles:", taxProfiles);
 
             } catch (e) {
                 console.error(e);
@@ -309,6 +309,27 @@
             }
         }
 
-        document.addEventListener("DOMContentLoaded", initNetProfiles);
+        function onReady(fn) {
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", fn);
+            } else {
+                fn();
+            }
+        }
+
+        // Retry קצר – בבְּלוֹגֶר לפעמים האלמנטים “מופיעים” טיפה אחרי הסקריפט
+        onReady(function () {
+            let tries = 0;
+            (function tryInit() {
+                tries++;
+                if ($("net_feeProfile") && $("net_taxProfile")) {
+                    initNetProfiles();
+                    return;
+                }
+                if (tries < 20) return setTimeout(tryInit, 100);
+                console.warn("net selects not found (net_feeProfile / net_taxProfile).");
+            })();
+        });
+
     })();
 </script>
