@@ -8,6 +8,10 @@
     .calc-back-btn i {
         font-size: 16px;
     }
+    .input-with-button select {
+        width: 100%;
+        
+    }
 
 }
 

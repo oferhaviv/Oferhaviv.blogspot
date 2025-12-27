@@ -295,12 +295,13 @@ function setRRBadge(rr, badgeId, textId) {
             selectEl.appendChild(opt);
         });
 
-        if (profiles.length > 0) {
-            selectEl.value = (profiles[0].id || profiles[0].name);
-        }
+
     }
 
     async function initNetProfilesIfPresent() {
+        // אם כבר טענו פעם אחת בעמוד הזה – לא לטעון שוב (מונע איפוס בחירה)
+        if (window.__net_profiles_loaded) return;
+
         const feeSelect = $("net_feeProfile");
         const taxSelect = $("net_taxProfile");
 
@@ -327,6 +328,8 @@ function setRRBadge(rr, badgeId, textId) {
 
             populateSelect(feeSelect, feeProfiles);
             populateSelect(taxSelect, taxProfiles);
+
+            window.__net_profiles_loaded = true;
 
             // נשמור גלובלית לשלב הבא (חישוב + שמירה)
             window.__net_feeProfiles = feeProfiles;
