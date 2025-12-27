@@ -620,7 +620,7 @@
 
 /* צד ימין – התיאור */
 .result-label {
-    flex: 0 0 45%;
+    flex: 0 0 48%;
     color: #cbd5e1;
     text-align: right;
     white-space: nowrap;
@@ -628,7 +628,7 @@
 
 /* צד שמאל – הערך */
 .result-value {
-    flex: 0 0 55%;
+    flex: 0 0 52%;
     text-align: left;
     display: flex;
     justify-content: flex-end;
