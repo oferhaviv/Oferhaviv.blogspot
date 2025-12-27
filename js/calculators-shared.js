@@ -218,18 +218,36 @@ function setRRBadge(rr, badgeId, textId) {
 
 }
 // ======================================================
-// ==== Net Profit Calculator: load fee/tax profiles ====
+// ==== Net Profit Calculator (profiles + local save + calc) ====
 // ======================================================
 (function () {
     "use strict";
 
+    // --- URLs (server templates) ---
     const FEES_URL = "https://oferhaviv.github.io/Oferhaviv.blogspot/db/fee_profiles.json";
     const TAX_URL = "https://oferhaviv.github.io/Oferhaviv.blogspot/db/tax_profiles.json";
 
+    // --- localStorage keys ---
     const LS_FEES_KEY = "net_fee_profiles_local";
     const LS_TAX_KEY = "net_tax_profiles_local";
+    const LS_LAST_FEE = "net_last_fee_profile";
+    const LS_LAST_TAX = "net_last_tax_profile";
 
     function $(id) { return document.getElementById(id); }
+
+    function parseNum(v) {
+        const s = String(v ?? "").replace(/,/g, "").trim();
+        const n = parseFloat(s);
+        return isNaN(n) ? 0 : n;
+    }
+
+    function currencySymbol(code) {
+        return (code === "ILS" || code === "NIS" || code === "₪") ? "₪" : "$";
+    }
+
+    function normalizeName(name) {
+        return (name || "").trim().toLowerCase();
+    }
 
     function setSelectStatus(selectEl, text) {
         if (!selectEl) return;
@@ -246,15 +264,19 @@ function setRRBadge(rr, badgeId, textId) {
         return await res.json();
     }
 
-    function readLocalProfiles(key) {
+    function readLocalArr(key) {
         try {
             const raw = localStorage.getItem(key);
             if (!raw) return [];
             const parsed = JSON.parse(raw);
             return Array.isArray(parsed) ? parsed : [];
-        } catch (e) {
+        } catch {
             return [];
         }
+    }
+
+    function writeLocalArr(key, arr) {
+        localStorage.setItem(key, JSON.stringify(arr));
     }
 
     function mergeByName(serverArr, localArr) {
@@ -282,7 +304,6 @@ function setRRBadge(rr, badgeId, textId) {
         if (!selectEl) return;
 
         selectEl.innerHTML = "";
-
         const first = document.createElement("option");
         first.value = "";
         first.textContent = "בחר...";
@@ -294,46 +315,82 @@ function setRRBadge(rr, badgeId, textId) {
             opt.textContent = p.name;
             selectEl.appendChild(opt);
         });
-
-
     }
 
-    async function initNetProfilesIfPresent() {
-        // אם כבר טענו פעם אחת בעמוד הזה – לא לטעון שוב (מונע איפוס בחירה)
-        if (window.__net_profiles_loaded) return;
+    function findProfile(list, value) {
+        if (!Array.isArray(list) || !value) return null;
+        const v = String(value).trim();
+        return list.find(p => (p.id && p.id === v) || (p.name && p.name === v)) || null;
+    }
 
+    function restoreLastSelections() {
         const feeSelect = $("net_feeProfile");
         const taxSelect = $("net_taxProfile");
 
-        // אם זה לא עמוד מחשבון רווח נטו – לצאת בשקט
-        if (!feeSelect || !taxSelect) return;
+        const lastFee = localStorage.getItem(LS_LAST_FEE) || "";
+        const lastTax = localStorage.getItem(LS_LAST_TAX) || "";
+
+        if (feeSelect && lastFee) {
+            const exists = Array.from(feeSelect.options).some(o => o.value === lastFee);
+            if (exists) feeSelect.value = lastFee;
+        }
+        if (taxSelect && lastTax) {
+            const exists = Array.from(taxSelect.options).some(o => o.value === lastTax);
+            if (exists) taxSelect.value = lastTax;
+        }
+
+        // אם אין last — נבחר ראשון אמיתי אם קיים (לא "בחר...")
+        if (feeSelect && !feeSelect.value && feeSelect.options.length > 1) feeSelect.selectedIndex = 1;
+        if (taxSelect && !taxSelect.value && taxSelect.options.length > 1) taxSelect.selectedIndex = 1;
+    }
+
+    function bindLastSelectionHandlers() {
+        const feeSelect = $("net_feeProfile");
+        const taxSelect = $("net_taxProfile");
+
+        if (feeSelect && !feeSelect.__bound_last) {
+            feeSelect.__bound_last = true;
+            feeSelect.addEventListener("change", function () {
+                localStorage.setItem(LS_LAST_FEE, feeSelect.value || "");
+            });
+        }
+        if (taxSelect && !taxSelect.__bound_last) {
+            taxSelect.__bound_last = true;
+            taxSelect.addEventListener("change", function () {
+                localStorage.setItem(LS_LAST_TAX, taxSelect.value || "");
+            });
+        }
+    }
+
+    // ---- Load profiles (server + local) ----
+    async function loadProfiles() {
+        const feeSelect = $("net_feeProfile");
+        const taxSelect = $("net_taxProfile");
+        if (!feeSelect || !taxSelect) return; // לא עמוד נטו
 
         setSelectStatus(feeSelect, "טוען פרופילי עמלות...");
         setSelectStatus(taxSelect, "טוען פרופילי מס...");
 
         try {
-            const [feesDb, taxDb] = await Promise.all([
-                fetchJson(FEES_URL),
-                fetchJson(TAX_URL)
-            ]);
+            const [feesDb, taxDb] = await Promise.all([fetchJson(FEES_URL), fetchJson(TAX_URL)]);
 
             const serverFees = (feesDb && feesDb.profiles) ? feesDb.profiles : [];
             const serverTaxes = (taxDb && taxDb.profiles) ? taxDb.profiles : [];
 
-            const localFees = readLocalProfiles(LS_FEES_KEY);
-            const localTaxes = readLocalProfiles(LS_TAX_KEY);
+            const localFees = readLocalArr(LS_FEES_KEY);
+            const localTaxes = readLocalArr(LS_TAX_KEY);
 
             const feeProfiles = mergeByName(serverFees, localFees);
             const taxProfiles = mergeByName(serverTaxes, localTaxes);
 
+            window.__net_feeProfiles = feeProfiles;
+            window.__net_taxProfiles = taxProfiles;
+
             populateSelect(feeSelect, feeProfiles);
             populateSelect(taxSelect, taxProfiles);
 
-            window.__net_profiles_loaded = true;
-
-            // נשמור גלובלית לשלב הבא (חישוב + שמירה)
-            window.__net_feeProfiles = feeProfiles;
-            window.__net_taxProfiles = taxProfiles;
+            bindLastSelectionHandlers();
+            restoreLastSelections();
 
         } catch (e) {
             console.error("Net profiles load failed:", e);
@@ -342,70 +399,7 @@ function setRRBadge(rr, badgeId, textId) {
         }
     }
 
-    // ב-Blogger לפעמים ה-DOM מוכן לפני שהסקריפט נטען → מריצים גם עכשיו וגם ב-ready
-    function run() {
-        // retry קצר אם האלמנטים עדיין לא בעמוד
-        let tries = 0;
-        (function tryInit() {
-            tries++;
-            if ($("net_feeProfile") && $("net_taxProfile")) {
-                initNetProfilesIfPresent();
-                return;
-            }
-            if (tries < 30) return setTimeout(tryInit, 100);
-        })();
-    }
-
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", run);
-    } else {
-        run();
-    }
-})();
-// ======================================================
-// ==== Net Profit: add fee profile locally (2 models) ====
-// ======================================================
-(function () {
-    "use strict";
-
-    const LS_FEES_KEY = "net_fee_profiles_local";
-
-    function $(id) { return document.getElementById(id); }
-
-    function showMsg(text, isError) {
-        const el = $("net_feeProfileMsg");
-        if (!el) return;
-        el.style.display = "block";
-        el.textContent = text;
-        el.style.borderColor = isError ? "#ef4444" : "#333";
-        setTimeout(() => { el.style.display = "none"; el.textContent = ""; }, 3000);
-    }
-
-    function readLocalFees() {
-        try {
-            const raw = localStorage.getItem(LS_FEES_KEY);
-            const arr = raw ? JSON.parse(raw) : [];
-            return Array.isArray(arr) ? arr : [];
-        } catch (e) {
-            return [];
-        }
-    }
-
-    function writeLocalFees(arr) {
-        localStorage.setItem(LS_FEES_KEY, JSON.stringify(arr));
-    }
-
-    function normalizeName(name) {
-        return (name || "").trim().toLowerCase();
-    }
-
-    function makeIdFromName(name) {
-        // id יציב מקומית (לא קריטי, רק לנוחות)
-        const base = (name || "").trim().toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_\u0590-\u05FF]/g, "");
-        const rnd = Math.random().toString(16).slice(2, 8);
-        return (base ? base : "fee_profile") + "_" + rnd;
-    }
-
+    // ---- UI: toggle fee model fields (if exists) ----
     function toggleFeeModelUI() {
         const model = ($("net_newFee_model")?.value) || "per_share";
         const per = $("net_model_per_share");
@@ -414,57 +408,56 @@ function setRRBadge(rr, badgeId, textId) {
         if (pct) pct.style.display = (model === "percent") ? "" : "none";
     }
 
-    function refreshSelectAndPickNew(newProfileIdOrName) {
-        // הטעינה שלך כבר מייצרת window.__net_feeProfiles
-        // אבל הכי בטוח: פשוט לקרוא לפונקציית הטעינה מחדש אם שמרת אותה גלובלית.
-        // אם אין – נרענן ע"י reload של הדף (לא מומלץ), אז נעשה פתרון קל:
-        // נטריגר event שמנגנון הטעינה שלך יכול להאזין לו בעתיד.
-        document.dispatchEvent(new CustomEvent("net:fees-updated", { detail: { pick: newProfileIdOrName } }));
+    function showMsg(id, text, isError) {
+        const el = $(id);
+        if (!el) return;
+        el.style.display = "block";
+        el.textContent = text;
+        el.style.borderColor = isError ? "#ef4444" : "#333";
+        setTimeout(() => { el.style.display = "none"; el.textContent = ""; }, 3200);
     }
 
+    function makeIdFromName(name, prefix) {
+        const base = (name || "").trim().toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_\u0590-\u05FF]/g, "");
+        const rnd = Math.random().toString(16).slice(2, 8);
+        return (prefix || "p") + "_" + (base ? base : "profile") + "_" + rnd;
+    }
+
+    // ---- Save fee profile locally + add to select + select it ----
     function saveFeeProfile() {
         const name = ($("net_newFee_name")?.value || "").trim();
         const currency = ($("net_newFee_currency")?.value || "USD").trim();
         const model = ($("net_newFee_model")?.value || "per_share").trim();
 
-        const min = parseFloat(($("net_newFee_min")?.value || "0").replace(/,/g, ""));
-        const discountPct = parseFloat(($("net_newFee_discountPct")?.value || "0").replace(/,/g, ""));
-        const sameBothSides = !!$("net_newFee_sameBothSides")?.checked;
+        const min = parseNum($("net_newFee_min")?.value);
+        const discountPct = parseNum($("net_newFee_discountPct")?.value);
 
-        if (!name) return showMsg("נא להזין שם לפרופיל.", true);
-        if (!isFinite(min) || min < 0) return showMsg("מינימום לעסקה לא תקין.", true);
-        if (!isFinite(discountPct) || discountPct < 0 || discountPct > 100) return showMsg("הנחה חייבת להיות בין 0 ל-100.", true);
+        if (!name) return showMsg("net_feeProfileMsg", "נא להזין שם לפרופיל.", true);
+        if (!isFinite(min) || min < 0) return showMsg("net_feeProfileMsg", "מינימום לעסקה לא תקין.", true);
+        if (!isFinite(discountPct) || discountPct < 0 || discountPct > 100) return showMsg("net_feeProfileMsg", "הנחה חייבת להיות בין 0 ל-100.", true);
 
-        let per_share = 0;
-        let percent = 0;
+        let per_share = 0, percent = 0;
 
         if (model === "per_share") {
-            const cents = parseFloat(($("net_newFee_centsPerShare")?.value || "0").replace(/,/g, ""));
-            if (!isFinite(cents) || cents < 0) return showMsg("סנטים למניה לא תקין.", true);
-            per_share = cents / 100; // סנט -> דולר/ש"ח
+            const cents = parseNum($("net_newFee_centsPerShare")?.value);
+            if (!isFinite(cents) || cents < 0) return showMsg("net_feeProfileMsg", "סנטים למניה לא תקין.", true);
+            per_share = cents / 100; // סנט -> מטבע
             percent = 0;
         } else {
-            const pctVal = parseFloat(($("net_newFee_percent")?.value || "0").replace(/,/g, ""));
-            if (!isFinite(pctVal) || pctVal < 0) return showMsg("אחוז עמלה לא תקין.", true);
+            const pctVal = parseNum($("net_newFee_percent")?.value);
+            if (!isFinite(pctVal) || pctVal < 0) return showMsg("net_feeProfileMsg", "אחוז עמלה לא תקין.", true);
             percent = pctVal / 100; // 0.08% -> 0.0008
             per_share = 0;
         }
 
-        const local = readLocalFees();
-
-        // בדיקת ייחודיות לפי שם (במכשיר)
-        const n = normalizeName(name);
-        const existsLocal = local.some(p => normalizeName(p.name) === n);
-
-        // גם מול פרופילי שרת שכבר נטענו (אם קיימים)
         const server = Array.isArray(window.__net_feeProfiles) ? window.__net_feeProfiles : [];
-        const existsServer = server.some(p => normalizeName(p.name) === n);
+        const local = readLocalArr(LS_FEES_KEY);
 
-        if (existsLocal || existsServer) {
-            return showMsg("שם הפרופיל כבר קיים. בחר שם אחר.", true);
-        }
+        const n = normalizeName(name);
+        const exists = server.some(p => normalizeName(p.name) === n) || local.some(p => normalizeName(p.name) === n);
+        if (exists) return showMsg("net_feeProfileMsg", "שם הפרופיל כבר קיים. בחר שם אחר.", true);
 
-        const id = makeIdFromName(name);
+        const id = makeIdFromName(name, "fee");
 
         const profile = {
             id,
@@ -475,38 +468,205 @@ function setRRBadge(rr, badgeId, textId) {
             discount_percent: discountPct
         };
 
-        // אם בעתיד תרצה לאפשר buy/sell שונים – כאן נבדיל כשsameBothSides=false
-        if (!sameBothSides) {
-            // כרגע אין UI נפרד, אז נשאיר זהה.
+        local.push(profile);
+        writeLocalArr(LS_FEES_KEY, local);
+
+        // עדכון מיידי ב-UI
+        const feeSelect = $("net_feeProfile");
+        if (feeSelect) {
+            const val = profile.id || profile.name;
+            const opt = document.createElement("option");
+            opt.value = val;
+            opt.textContent = profile.name;
+            feeSelect.appendChild(opt);
+            feeSelect.value = val;
+            localStorage.setItem(LS_LAST_FEE, val);
         }
 
+        // עדכון הרשימה בזיכרון
+        if (Array.isArray(window.__net_feeProfiles)) window.__net_feeProfiles.push(profile);
+        else window.__net_feeProfiles = [profile];
+
+        showMsg("net_feeProfileMsg", "נשמר! הפרופיל נבחר ברשימה.", false);
+
+        // ניקוי שם (שאר הערכים נשארים לנוחות)
+        if ($("net_newFee_name")) $("net_newFee_name").value = "";
+    }
+
+    // ---- Save tax profile locally + add to select + select it ----
+    function saveTaxProfile() {
+        const name = ($("net_newTax_name")?.value || "").trim();
+        const taxPct = parseNum($("net_newTax_pct")?.value);
+
+        if (!name) return showMsg("net_taxProfileMsg", "נא להזין שם לפרופיל מס.", true);
+        if (!isFinite(taxPct) || taxPct < 0 || taxPct > 100) return showMsg("net_taxProfileMsg", "אחוז מס חייב להיות בין 0 ל-100.", true);
+
+        const server = Array.isArray(window.__net_taxProfiles) ? window.__net_taxProfiles : [];
+        const local = readLocalArr(LS_TAX_KEY);
+
+        const n = normalizeName(name);
+        const exists = server.some(p => normalizeName(p.name) === n) || local.some(p => normalizeName(p.name) === n);
+        if (exists) return showMsg("net_taxProfileMsg", "שם פרופיל מס כבר קיים. בחר שם אחר.", true);
+
+        const id = makeIdFromName(name, "tax");
+
+        const profile = {
+            id,
+            name,
+            tax_percent: taxPct
+        };
+
         local.push(profile);
-        writeLocalFees(local);
+        writeLocalArr(LS_TAX_KEY, local);
 
-        showMsg("נשמר! הפרופיל יופיע ברשימה.", false);
+        const taxSelect = $("net_taxProfile");
+        if (taxSelect) {
+            const val = profile.id || profile.name;
+            const opt = document.createElement("option");
+            opt.value = val;
+            opt.textContent = profile.name;
+            taxSelect.appendChild(opt);
+            taxSelect.value = val;
+            localStorage.setItem(LS_LAST_TAX, val);
+        }
 
-        // לניקיון
-        $("net_newFee_name").value = "";
-        // נשאיר את שאר הערכים
+        if (Array.isArray(window.__net_taxProfiles)) window.__net_taxProfiles.push(profile);
+        else window.__net_taxProfiles = [profile];
 
-        // לבחירה אוטומטית בפרופיל החדש – ניישם בשלב הבא בתוך מנגנון ה-refresh
-        refreshSelectAndPickNew(id);
+        showMsg("net_taxProfileMsg", "נשמר! פרופיל המס נבחר ברשימה.", false);
+
+        if ($("net_newTax_name")) $("net_newTax_name").value = "";
     }
 
+    // ---- Fee calc helper ----
+    function calcSideFee(price, qty, sideRule) {
+        const perShare = parseNum(sideRule?.per_share);
+        const percent = parseNum(sideRule?.percent);
+        const min = parseNum(sideRule?.min);
+        const flat = parseNum(sideRule?.flat);
+
+        const tradeValue = price * qty;
+        const raw = flat + (perShare * qty) + (percent * tradeValue);
+        return Math.max(raw, min || 0);
+    }
+
+    // ---- Main calc ----
+    function calcNetProfit() {
+        const buy = parseNum($("net_buyPrice")?.value);
+        const sell = parseNum($("net_sellPrice")?.value);
+        const qty = parseNum($("net_qty")?.value);
+
+        if (!buy || !sell || !qty) {
+            alert("נא למלא מחיר קנייה, מחיר מכירה וכמות.");
+            return;
+        }
+
+        const feeSelectVal = $("net_feeProfile")?.value || "";
+        const taxSelectVal = $("net_taxProfile")?.value || "";
+
+        const feeProfile = findProfile(window.__net_feeProfiles, feeSelectVal);
+        const taxProfile = findProfile(window.__net_taxProfiles, taxSelectVal);
+
+        if (!feeProfile) {
+            alert("נא לבחור פרופיל עמלות.");
+            return;
+        }
+        if (!taxProfile) {
+            alert("נא לבחור פרופיל מס.");
+            return;
+        }
+
+        // לשמור בחירה אחרונה
+        localStorage.setItem(LS_LAST_FEE, feeSelectVal);
+        localStorage.setItem(LS_LAST_TAX, taxSelectVal);
+
+        const discount = parseNum(feeProfile.discount_percent) / 100;
+        const sym = currencySymbol(feeProfile.currency);
+
+        const buyFee = calcSideFee(buy, qty, feeProfile.buy);
+        const sellFee = calcSideFee(sell, qty, feeProfile.sell);
+
+        const buyFeeDisc = buyFee * (1 - discount);
+        const sellFeeDisc = sellFee * (1 - discount);
+        const totalFees = buyFeeDisc + sellFeeDisc;
+
+        const totalBuy = buy * qty;
+        const totalSell = sell * qty;
+
+        const grossProfit = (sell - buy) * qty;
+        const grossPct = totalBuy > 0 ? (grossProfit / totalBuy * 100) : 0;
+
+        const taxableBase = Math.max(grossProfit - totalFees, 0);
+        const taxPct = parseNum(taxProfile.tax_percent) / 100;
+        const tax = taxableBase * taxPct;
+
+        const netProfit = grossProfit - totalFees - tax;
+
+        // אחוז נטו מול “השקעה בפועל” (כולל עמלת קנייה אחרי הנחה)
+        const invested = totalBuy + buyFeeDisc;
+        const netPct = invested > 0 ? (netProfit / invested * 100) : 0;
+
+        // Render
+        if ($("net_totalBuy")) $("net_totalBuy").innerText = formatMoney(totalBuy);
+        if ($("net_totalSell")) $("net_totalSell").innerText = formatMoney(totalSell);
+
+        if ($("net_grossProfit")) $("net_grossProfit").innerText = formatMoney(grossProfit);
+        if ($("net_grossPct")) $("net_grossPct").innerText = formatPercent(grossPct);
+
+        if ($("net_totalFees")) $("net_totalFees").innerText = formatMoney(totalFees);
+        if ($("net_tax")) $("net_tax").innerText = formatMoney(tax);
+
+        if ($("net_netProfit")) $("net_netProfit").innerText = formatMoney(netProfit);
+        if ($("net_netPct")) $("net_netPct").innerText = formatPercent(netPct);
+
+        // אם בתוצאות יש לך סימן מטבע קבוע ב-HTML ($) — השאר.
+        // אם תרצה דינמי, נגיד לי ואעשה replace קטן.
+
+        if ($("netResults")) $("netResults").style.display = "block";
+    }
+
+    // ---- Bind buttons (once) ----
+    function bindNetHandlersOnce() {
+        const calcBtn = $("net_btnCalc");
+        if (calcBtn && !calcBtn.__bound_net) {
+            calcBtn.__bound_net = true;
+            calcBtn.addEventListener("click", calcNetProfit);
+        }
+
+        const saveFeeBtn = $("net_btnSaveFeeProfile");
+        if (saveFeeBtn && !saveFeeBtn.__bound_net) {
+            saveFeeBtn.__bound_net = true;
+            saveFeeBtn.addEventListener("click", saveFeeProfile);
+        }
+
+        const saveTaxBtn = $("net_btnSaveTaxProfile");
+        if (saveTaxBtn && !saveTaxBtn.__bound_net) {
+            saveTaxBtn.__bound_net = true;
+            saveTaxBtn.addEventListener("click", saveTaxProfile);
+        }
+
+        const feeModel = $("net_newFee_model");
+        if (feeModel && !feeModel.__bound_net) {
+            feeModel.__bound_net = true;
+            toggleFeeModelUI();
+            feeModel.addEventListener("change", toggleFeeModelUI);
+        }
+    }
+
+    // ---- Init with retry (Blogger) ----
     function init() {
-        // אם זה לא עמוד נטו – לצאת
-        if (!$("net_newFee_model") || !$("net_btnSaveFeeProfile")) return;
+        // רק אם זה העמוד הזה
+        if (!$("net_feeProfile") || !$("net_taxProfile")) return;
 
-        toggleFeeModelUI();
-        $("net_newFee_model").addEventListener("change", toggleFeeModelUI);
-        $("net_btnSaveFeeProfile").addEventListener("click", saveFeeProfile);
+        loadProfiles();
+        bindNetHandlersOnce();
     }
 
-    // Retry קצר (Blogger)
     let tries = 0;
     (function tryInit() {
         tries++;
-        if ($("net_newFee_model") && $("net_btnSaveFeeProfile")) return init();
-        if (tries < 30) return setTimeout(tryInit, 100);
+        if ($("net_feeProfile") && $("net_taxProfile")) return init();
+        if (tries < 40) return setTimeout(tryInit, 100);
     })();
+
 })();
