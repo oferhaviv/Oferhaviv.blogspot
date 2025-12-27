@@ -21,8 +21,8 @@
             "discount_percent": 0
         },
         {
-            "id": "israel_market_0_08pct_min_2_35_ils",
-            "name": "שוק ישראלי – 0.08% (מינ׳ 2.35₪)",
+            "id": "IBI_israel_market",
+            "name": "IBI שוק ישראלי – 0.08% (מינ׳ 2.35₪)",
             "currency": "ILS",
             "buy": {
                 "per_share": 0.0,
@@ -39,8 +39,8 @@
             "discount_percent": 0
         },
         {
-            "id": "us_market_1cent_per_share_min_7_5_usd",
-            "name": "שוק אמריקאי – $0.01 למניה (מינ׳ $7.5)",
+            "id": "IBI_us_market",
+            "name": "IBI שוק אמריקאי – $0.01 למניה (מינ׳ $7.5)",
             "currency": "USD",
             "buy": {
                 "per_share": 0.01,

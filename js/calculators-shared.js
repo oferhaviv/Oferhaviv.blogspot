@@ -327,6 +327,14 @@ function setRRBadge(rr, badgeId, textId) {
             const taxProfiles = mergeByName(serverTaxes, localTaxes);
 
             populateSelect(feeSelect, feeProfiles);
+
+            document.addEventListener("net:fees-updated", function (e) {
+                // לטעון מחדש ואז לבחור בפרופיל החדש
+                initNetProfilesIfPresent?.(); // אם הפונקציה בסקופ, אם לא – תגיד לי ואארגן אותה גלובלית
+                const pick = e?.detail?.pick;
+                if (pick) setTimeout(() => { const s = document.getElementById("net_feeProfile"); if (s) s.value = pick; }, 300);
+            });
+
             populateSelect(taxSelect, taxProfiles);
 
             window.__net_profiles_loaded = true;
@@ -361,4 +369,152 @@ function setRRBadge(rr, badgeId, textId) {
     } else {
         run();
     }
+})();
+// ======================================================
+// ==== Net Profit: add fee profile locally (2 models) ====
+// ======================================================
+(function () {
+    "use strict";
+
+    const LS_FEES_KEY = "net_fee_profiles_local";
+
+    function $(id) { return document.getElementById(id); }
+
+    function showMsg(text, isError) {
+        const el = $("net_feeProfileMsg");
+        if (!el) return;
+        el.style.display = "block";
+        el.textContent = text;
+        el.style.borderColor = isError ? "#ef4444" : "#333";
+        setTimeout(() => { el.style.display = "none"; el.textContent = ""; }, 3000);
+    }
+
+    function readLocalFees() {
+        try {
+            const raw = localStorage.getItem(LS_FEES_KEY);
+            const arr = raw ? JSON.parse(raw) : [];
+            return Array.isArray(arr) ? arr : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function writeLocalFees(arr) {
+        localStorage.setItem(LS_FEES_KEY, JSON.stringify(arr));
+    }
+
+    function normalizeName(name) {
+        return (name || "").trim().toLowerCase();
+    }
+
+    function makeIdFromName(name) {
+        // id יציב מקומית (לא קריטי, רק לנוחות)
+        const base = (name || "").trim().toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_\u0590-\u05FF]/g, "");
+        const rnd = Math.random().toString(16).slice(2, 8);
+        return (base ? base : "fee_profile") + "_" + rnd;
+    }
+
+    function toggleFeeModelUI() {
+        const model = ($("net_newFee_model")?.value) || "per_share";
+        const per = $("net_model_per_share");
+        const pct = $("net_model_percent");
+        if (per) per.style.display = (model === "per_share") ? "" : "none";
+        if (pct) pct.style.display = (model === "percent") ? "" : "none";
+    }
+
+    function refreshSelectAndPickNew(newProfileIdOrName) {
+        // הטעינה שלך כבר מייצרת window.__net_feeProfiles
+        // אבל הכי בטוח: פשוט לקרוא לפונקציית הטעינה מחדש אם שמרת אותה גלובלית.
+        // אם אין – נרענן ע"י reload של הדף (לא מומלץ), אז נעשה פתרון קל:
+        // נטריגר event שמנגנון הטעינה שלך יכול להאזין לו בעתיד.
+        document.dispatchEvent(new CustomEvent("net:fees-updated", { detail: { pick: newProfileIdOrName } }));
+    }
+
+    function saveFeeProfile() {
+        const name = ($("net_newFee_name")?.value || "").trim();
+        const currency = ($("net_newFee_currency")?.value || "USD").trim();
+        const model = ($("net_newFee_model")?.value || "per_share").trim();
+
+        const min = parseFloat(($("net_newFee_min")?.value || "0").replace(/,/g, ""));
+        const discountPct = parseFloat(($("net_newFee_discountPct")?.value || "0").replace(/,/g, ""));
+        const sameBothSides = !!$("net_newFee_sameBothSides")?.checked;
+
+        if (!name) return showMsg("נא להזין שם לפרופיל.", true);
+        if (!isFinite(min) || min < 0) return showMsg("מינימום לעסקה לא תקין.", true);
+        if (!isFinite(discountPct) || discountPct < 0 || discountPct > 100) return showMsg("הנחה חייבת להיות בין 0 ל-100.", true);
+
+        let per_share = 0;
+        let percent = 0;
+
+        if (model === "per_share") {
+            const cents = parseFloat(($("net_newFee_centsPerShare")?.value || "0").replace(/,/g, ""));
+            if (!isFinite(cents) || cents < 0) return showMsg("סנטים למניה לא תקין.", true);
+            per_share = cents / 100; // סנט -> דולר/ש"ח
+            percent = 0;
+        } else {
+            const pctVal = parseFloat(($("net_newFee_percent")?.value || "0").replace(/,/g, ""));
+            if (!isFinite(pctVal) || pctVal < 0) return showMsg("אחוז עמלה לא תקין.", true);
+            percent = pctVal / 100; // 0.08% -> 0.0008
+            per_share = 0;
+        }
+
+        const local = readLocalFees();
+
+        // בדיקת ייחודיות לפי שם (במכשיר)
+        const n = normalizeName(name);
+        const existsLocal = local.some(p => normalizeName(p.name) === n);
+
+        // גם מול פרופילי שרת שכבר נטענו (אם קיימים)
+        const server = Array.isArray(window.__net_feeProfiles) ? window.__net_feeProfiles : [];
+        const existsServer = server.some(p => normalizeName(p.name) === n);
+
+        if (existsLocal || existsServer) {
+            return showMsg("שם הפרופיל כבר קיים. בחר שם אחר.", true);
+        }
+
+        const id = makeIdFromName(name);
+
+        const profile = {
+            id,
+            name,
+            currency,
+            buy: { per_share, percent, min, flat: 0 },
+            sell: { per_share, percent, min, flat: 0 },
+            discount_percent: discountPct
+        };
+
+        // אם בעתיד תרצה לאפשר buy/sell שונים – כאן נבדיל כשsameBothSides=false
+        if (!sameBothSides) {
+            // כרגע אין UI נפרד, אז נשאיר זהה.
+        }
+
+        local.push(profile);
+        writeLocalFees(local);
+
+        showMsg("נשמר! הפרופיל יופיע ברשימה.", false);
+
+        // לניקיון
+        $("net_newFee_name").value = "";
+        // נשאיר את שאר הערכים
+
+        // לבחירה אוטומטית בפרופיל החדש – ניישם בשלב הבא בתוך מנגנון ה-refresh
+        refreshSelectAndPickNew(id);
+    }
+
+    function init() {
+        // אם זה לא עמוד נטו – לצאת
+        if (!$("net_newFee_model") || !$("net_btnSaveFeeProfile")) return;
+
+        toggleFeeModelUI();
+        $("net_newFee_model").addEventListener("change", toggleFeeModelUI);
+        $("net_btnSaveFeeProfile").addEventListener("click", saveFeeProfile);
+    }
+
+    // Retry קצר (Blogger)
+    let tries = 0;
+    (function tryInit() {
+        tries++;
+        if ($("net_newFee_model") && $("net_btnSaveFeeProfile")) return init();
+        if (tries < 30) return setTimeout(tryInit, 100);
+    })();
 })();
