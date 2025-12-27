@@ -217,3 +217,145 @@ function setRRBadge(rr, badgeId, textId) {
     textEl.textContent = "1:" + formatRatio(rr);
 
 }
+// ======================================================
+// ==== Net Profit Calculator: load fee/tax profiles ====
+// ======================================================
+(function () {
+    "use strict";
+
+    const FEES_URL = "https://oferhaviv.github.io/Oferhaviv.blogspot/db/fee_profiles.json";
+    const TAX_URL = "https://oferhaviv.github.io/Oferhaviv.blogspot/db/tax_profiles.json";
+
+    const LS_FEES_KEY = "net_fee_profiles_local";
+    const LS_TAX_KEY = "net_tax_profiles_local";
+
+    function $(id) { return document.getElementById(id); }
+
+    function setSelectStatus(selectEl, text) {
+        if (!selectEl) return;
+        selectEl.innerHTML = "";
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = text;
+        selectEl.appendChild(opt);
+    }
+
+    async function fetchJson(url) {
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status + " for " + url);
+        return await res.json();
+    }
+
+    function readLocalProfiles(key) {
+        try {
+            const raw = localStorage.getItem(key);
+            if (!raw) return [];
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function mergeByName(serverArr, localArr) {
+        const out = [];
+        const seen = new Set();
+
+        (serverArr || []).forEach(p => {
+            const name = (p && p.name) ? String(p.name).trim() : "";
+            if (!name || seen.has(name.toLowerCase())) return;
+            seen.add(name.toLowerCase());
+            out.push(p);
+        });
+
+        (localArr || []).forEach(p => {
+            const name = (p && p.name) ? String(p.name).trim() : "";
+            if (!name || seen.has(name.toLowerCase())) return;
+            seen.add(name.toLowerCase());
+            out.push(p);
+        });
+
+        return out;
+    }
+
+    function populateSelect(selectEl, profiles) {
+        if (!selectEl) return;
+
+        selectEl.innerHTML = "";
+
+        const first = document.createElement("option");
+        first.value = "";
+        first.textContent = "בחר...";
+        selectEl.appendChild(first);
+
+        profiles.forEach(p => {
+            const opt = document.createElement("option");
+            opt.value = p.id || p.name;
+            opt.textContent = p.name;
+            selectEl.appendChild(opt);
+        });
+
+        if (profiles.length > 0) {
+            selectEl.value = (profiles[0].id || profiles[0].name);
+        }
+    }
+
+    async function initNetProfilesIfPresent() {
+        const feeSelect = $("net_feeProfile");
+        const taxSelect = $("net_taxProfile");
+
+        // אם זה לא עמוד מחשבון רווח נטו – לצאת בשקט
+        if (!feeSelect || !taxSelect) return;
+
+        setSelectStatus(feeSelect, "טוען פרופילי עמלות...");
+        setSelectStatus(taxSelect, "טוען פרופילי מס...");
+
+        try {
+            const [feesDb, taxDb] = await Promise.all([
+                fetchJson(FEES_URL),
+                fetchJson(TAX_URL)
+            ]);
+
+            const serverFees = (feesDb && feesDb.profiles) ? feesDb.profiles : [];
+            const serverTaxes = (taxDb && taxDb.profiles) ? taxDb.profiles : [];
+
+            const localFees = readLocalProfiles(LS_FEES_KEY);
+            const localTaxes = readLocalProfiles(LS_TAX_KEY);
+
+            const feeProfiles = mergeByName(serverFees, localFees);
+            const taxProfiles = mergeByName(serverTaxes, localTaxes);
+
+            populateSelect(feeSelect, feeProfiles);
+            populateSelect(taxSelect, taxProfiles);
+
+            // נשמור גלובלית לשלב הבא (חישוב + שמירה)
+            window.__net_feeProfiles = feeProfiles;
+            window.__net_taxProfiles = taxProfiles;
+
+        } catch (e) {
+            console.error("Net profiles load failed:", e);
+            setSelectStatus(feeSelect, "שגיאה בטעינת פרופילי עמלות");
+            setSelectStatus(taxSelect, "שגיאה בטעינת פרופילי מס");
+        }
+    }
+
+    // ב-Blogger לפעמים ה-DOM מוכן לפני שהסקריפט נטען → מריצים גם עכשיו וגם ב-ready
+    function run() {
+        // retry קצר אם האלמנטים עדיין לא בעמוד
+        let tries = 0;
+        (function tryInit() {
+            tries++;
+            if ($("net_feeProfile") && $("net_taxProfile")) {
+                initNetProfilesIfPresent();
+                return;
+            }
+            if (tries < 30) return setTimeout(tryInit, 100);
+        })();
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", run);
+    } else {
+        run();
+    }
+})();
