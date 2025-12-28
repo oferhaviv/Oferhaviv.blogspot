@@ -1,6 +1,6 @@
 <div class="calc-box" id="netCalc">
     <h2>מחשבון רווחים נטו</h2>
-    <small dir="ltr"><small><small>Version 0.006 UI</small></small></small>
+    <small dir="ltr"><small><small>Version 0.007 UI</small></small></small>
 
     <!-- פרטי עסקה -->
     <div class="calc-section">
@@ -148,14 +148,24 @@
     <!-- תוצאות -->
     <div class="calc-results" id="netResults" style="display:none;">
         <div class="result-row">
-            <div class="result-label">השקעה (עלות קנייה)</div>
+            <div class="result-label">רווח ברוטו</div>
+            <div class="result-value">
+                <b>
+                    <span class="value-ltr">$<span id="net_grossProfit">0.00</span></span>
+                    <span class="value-sub-ltr">(<span id="net_grossPct">0.00</span>%)</span>
+                </b>
+            </div>
+        </div>
+
+        <div class="result-row">
+            <div class="result-label">השקעה</div>
             <div class="result-value">
                 <span class="value-ltr">$<span id="net_totalBuy">0.00</span></span>
             </div>
         </div>
 
         <div class="result-row">
-            <div class="result-label">תמורה (מכירה)</div>
+            <div class="result-label">מכירה</div>
             <div class="result-value">
                 <span class="value-ltr">$<span id="net_totalSell">0.00</span></span>
             </div>
@@ -164,22 +174,14 @@
         <div class="result-separator"></div>
 
         <div class="result-row">
-            <div class="result-label">רווח ברוטו</div>
-            <div class="result-value">
-                <span class="value-ltr">$<span id="net_grossProfit">0.00</span></span>
-                <span class="value-sub-ltr">(<span id="net_grossPct">0.00</span>%)</span>
-            </div>
-        </div>
-
-        <div class="result-row">
-            <div class="result-label">עמלות (אחרי הנחה)</div>
+            <div class="result-label">עמלות</div>
             <div class="result-value">
                 <span class="value-ltr">$<span id="net_totalFees">0.00</span></span>
             </div>
         </div>
 
         <div class="result-row">
-            <div class="result-label">מס</div>
+            <div class="result-label">מיסים</div>
             <div class="result-value">
                 <span class="value-ltr">$<span id="net_tax">0.00</span></span>
             </div>
@@ -190,8 +192,10 @@
         <div class="result-row">
             <div class="result-label"><strong>רווח נטו</strong></div>
             <div class="result-value">
-                <strong class="value-ltr">$<span id="net_netProfit">0.00</span></strong>
-                <span class="value-sub-ltr">(<span id="net_netPct">0.00</span>%)</span>
+                <b>
+                    <strong class="value-ltr">$<span id="net_netProfit">0.00</span></strong>
+                    <span class="value-sub-ltr">(<span id="net_netPct">0.00</span>%)</span>
+                </b>
             </div>
         </div>
 
