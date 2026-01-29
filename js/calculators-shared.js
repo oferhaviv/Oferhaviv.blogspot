@@ -668,5 +668,212 @@ function setRRBadge(rr, badgeId, textId) {
         if ($("net_feeProfile") && $("net_taxProfile")) return init();
         if (tries < 40) return setTimeout(tryInit, 100);
     })();
+	
+// ================================
+// Save Recommendation -> Google Sheet (Apps Script Web App)
+// ================================
+const RISK_SAVE_ENDPOINT = "https://script.google.com/macros/s/AKfycbyrsHb_HBKZDYTcQk_C7kuIgKLjaslWIi00T5i6OEHUTQ7KANhFN5y2piI_3_lZREXw/exec";
+const RISK_SAVE_SHEET_ID = "1EmnIbmoARnbdc7kDltCt4gtwp5UISJC2TGneMu0GokM";
+const RISK_SAVE_TOKEN = "dor_recommend_it"; // חייב להתאים ל-Apps Script
+
+	function showRiskSaveMsg(text, isError) {
+	  const el = document.getElementById("risk_save_msg");
+	  if (!el) return;
+	  el.style.display = "block";
+	  el.textContent = text;
+	  el.style.borderColor = isError ? "#ef4444" : "#333";
+	  setTimeout(() => { el.style.display = "none"; el.textContent = ""; }, 3500);
+	}
+	function getNum(id) {
+	  const el = document.getElementById(id);
+	  if (!el) return NaN;
+	  const v = (el.value || "").toString().replace(/,/g, "");
+	  const n = parseFloat(v);
+	  return isNaN(n) ? NaN : n;
+	}
+
+	function formatPercent1(value) {
+	  if (!isFinite(value)) return "0.0";
+	  return (Math.round(value * 10) / 10).toFixed(1);
+	}
+
+	function buildRiskSummaryText(recDate, data) {
+	  const lines = [];
+	  lines.push(`תאריך: ${recDate}`);
+	  lines.push(`מניה: ${data.symbol || "-"}`);
+
+	  if (isFinite(data.cancelPrice) && data.cancelPrice > 0) {
+		lines.push(`מחיר ביטול עסקה: ${data.cancelPrice.toFixed(2)}$`);
+	  }
+
+	  lines.push(`מחיר פריצה: ${data.buy.toFixed(2)}$`);
+	  lines.push(`סטופ: ${data.sl.toFixed(2)} $ (${formatPercent1(data.slPercent)}%)`);
+	  lines.push(`יעד 1: ${data.tp1.toFixed(2)} $ (${formatPercent1(data.tp1Percent)}%)`);
+	  lines.push(`יעד 2: ${data.tp2.toFixed(2)} $ (${formatPercent1(data.tp2Percent)}%)`);
+
+	  const notes = (data.notes || "").trim();
+	  if (notes) lines.push(`הערות: ${notes}`);
+
+	  return lines.join("\n");
+	}
+
+	function openRiskCopyModal(text) {
+	  const modal = document.getElementById("risk_copy_modal");
+	  const ta = document.getElementById("risk_copy_text");
+	  if (!modal || !ta) {
+		// fallback
+		alert(text);
+		return;
+	  }
+	  ta.value = text;
+	  modal.style.display = "flex";
+	}
+
+	function closeRiskCopyModal() {
+	  const modal = document.getElementById("risk_copy_modal");
+	  if (modal) modal.style.display = "none";
+	}
+
+	function copyRiskSummaryToClipboard() {
+	  const ta = document.getElementById("risk_copy_text");
+	  const text = ta ? ta.value : "";
+
+	  // Clipboard API (אם זמין)
+	  if (navigator.clipboard && navigator.clipboard.writeText) {
+		navigator.clipboard.writeText(text)
+		  .then(() => showRiskSaveMsg("הועתק ✅", false))
+		  .catch(() => fallbackCopy());
+		return;
+	  }
+	  fallbackCopy();
+
+	  function fallbackCopy() {
+		if (!ta) return;
+		ta.focus();
+		ta.select();
+		try {
+		  document.execCommand("copy");
+		  showRiskSaveMsg("הועתק ✅", false);
+		} catch (e) {
+		  alert("לא הצלחתי להעתיק אוטומטית. אפשר לסמן ולהעתיק ידנית.");
+		}
+	  }
+	}
+	function saveRecommendationToGoogle() {
+	  // 1) מחשב אם לא חושב (או חושב שוב – לא מזיק)
+	  // אם חסר שדות, calculateStock יעצור עם alert
+	  calculateStock();
+
+	  const buy = getNum("risk_buy");
+	  const sl  = getNum("risk_sl");
+	  const tp1 = getNum("risk_tp1");
+	  const tp2 = getNum("risk_tp2");
+	  const qty = getNum("risk_amount");
+
+	  if (!isFinite(buy) || !isFinite(sl) || !isFinite(tp1) || !isFinite(tp2) || !isFinite(qty)) {
+		return; // calculateStock כבר התריע
+	  }
+
+	  const symbol = (document.getElementById("risk_symbol")?.value || "").trim().toUpperCase();
+	  const cancelPrice = getNum("risk_cancel");
+	  const notes = (document.getElementById("risk_notes")?.value || "").trim();
+
+	  // 2) שואל תאריך המלצה
+	  const today = new Date();
+	  const isoToday = today.toISOString().slice(0, 10); // YYYY-MM-DD
+	  const recDate = prompt("מה תאריך ההמלצה? (YYYY-MM-DD)", isoToday);
+	  if (recDate === null) return; // cancel
+
+	  // 3) חישובים (לשורה בקובץ + לסיכום)
+	  const totalCost = buy * qty;
+
+	  const tp1Profit  = (tp1 - buy) * qty;
+	  const tp1Percent = ((tp1 - buy) / buy) * 100;
+
+	  const tp2Profit  = (tp2 - buy) * qty;
+	  const tp2Percent = ((tp2 - buy) / buy) * 100;
+
+	  const slLoss    = (buy - sl) * qty;
+	  const slPercent = ((buy - sl) / buy) * 100;
+
+	  const rr1 = (tp1Percent > 0 && slPercent > 0) ? (tp1Percent / slPercent) : "";
+	  const rr2 = (tp2Percent > 0 && slPercent > 0) ? (tp2Percent / slPercent) : "";
+
+	  // 4) שולח לגוגל
+	  if (!RISK_SAVE_ENDPOINT || RISK_SAVE_ENDPOINT.indexOf("http") !== 0) {
+		alert("חסר RISK_SAVE_ENDPOINT בקוד.");
+		return;
+	  }
+	  if (!RISK_SAVE_SHEET_ID) {
+		alert("חסר RISK_SAVE_SHEET_ID בקוד.");
+		return;
+	  }
+
+	  const payload = {
+		token: RISK_SAVE_TOKEN,
+		sheetId: RISK_SAVE_SHEET_ID,
+
+		recommendationDate: recDate,      // תאריך המלצה (מהשאלה)
+		entryDateClient: isoToday,        // תאריך הזנה בצד לקוח (אופציונלי; בשרת גם יש new Date)
+
+		symbol,
+		breakout: buy,
+		stop: sl,
+		tp1,
+		tp2,
+		cancelPrice: (isFinite(cancelPrice) && cancelPrice > 0) ? cancelPrice : "",
+
+		qty,
+		cost: totalCost,
+
+		slLoss,
+		slPercent,
+		tp1Profit,
+		tp1Percent,
+		tp2Profit,
+		tp2Percent,
+		rr1,
+		rr2,
+
+		notes
+	  };
+
+	  showRiskSaveMsg("שומר...", false);
+
+	  fetch(RISK_SAVE_ENDPOINT, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(payload)
+	  })
+	  .then(r => r.json().catch(() => ({})))
+	  .then(data => {
+		if (data && data.ok) {
+		  showRiskSaveMsg("נשמר בהצלחה ✅", false);
+
+		  // 5) מציג חלונית עם טקסט מוכן להעתקה
+		  const summaryText = buildRiskSummaryText(recDate, {
+			symbol,
+			buy,
+			sl,
+			tp1,
+			tp2,
+			cancelPrice,
+			notes,
+			slPercent,
+			tp1Percent,
+			tp2Percent
+		  });
+		  openRiskCopyModal(summaryText);
+
+		} else {
+		  showRiskSaveMsg("שגיאה בשמירה: " + (data.error || "לא ידוע"), true);
+		}
+	  })
+	  .catch(err => {
+		console.error(err);
+		showRiskSaveMsg("שגיאת רשת בשמירה ל-Google.", true);
+	  });
+	}
+
 
 })();

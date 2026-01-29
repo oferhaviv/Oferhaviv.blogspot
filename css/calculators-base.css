@@ -748,3 +748,56 @@
 .input-with-button select {
     flex: 1;
 }
+/* textarea כמו input */
+.calc-textarea{
+  width:100%;
+  padding:8px;
+  border-radius:6px;
+  border:1px solid #444;
+  box-sizing:border-box;
+  font-size:14px;
+  background:#1f2933;
+  color:#f9fafb;
+  resize: vertical;
+}
+.calc-textarea:focus{
+  outline:none;
+  border-color:#3b82f6;
+}
+
+/* 2 כפתורים באותה שורה: 70/30 */
+.calc-btn-row{
+  display:flex;
+  gap:10px;
+  margin-bottom:12px;
+}
+.calc-btn-row .calc-btn{
+  margin-bottom:0; /* מבטל את המרווח שהיה בכפתור רגיל */
+}
+.calc-btn-main{ flex: 7 1 0; }
+.calc-btn-save{ flex: 3 1 0; }
+
+/* Modal */
+.calc-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  z-index:9999;
+}
+.calc-modal-card{
+  width:100%;
+  max-width:520px;
+  background:#121212;
+  border:1px solid #333;
+  border-radius:12px;
+  padding:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.6);
+}
+.calc-modal-title{
+  font-weight:700;
+  margin-bottom:10px;
+}
