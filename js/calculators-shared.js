@@ -106,6 +106,14 @@ function fetchMarketPrice() {
       return;
     }
 
+	if (sl >= buy) {
+	  alert("סטופ חייב להיות נמוך ממחיר הקנייה/פריצה.");
+	  return;
+	}
+	if (tp1 <= buy || tp2 <= buy) {
+	  alert("יעדים חייבים להיות גבוהים ממחיר הקנייה/פריצה.");
+	  return;
+	}
     var totalCost = buy * amount;
 
     // TP1
@@ -202,21 +210,15 @@ function setRRBadge(rr, badgeId, textId) {
 
     badgeEl.classList.remove("rr-1", "rr-15", "rr-2", "rr-3p");
     badgeEl.classList.add(cat.cls);
-    textEl.textContent = cat.text;
-}
-function setRRBadge(rr, badgeId, textId) {
-    const cat = rrCategory(rr);
-    const badgeEl = document.getElementById(badgeId);
-    const textEl = document.getElementById(textId);
-
-    // אם אחד מהם לא קיים בדף – פשוט לא עושים כלום
-    if (!badgeEl || !textEl) return;
-
-    badgeEl.classList.remove("rr-1", "rr-15", "rr-2", "rr-3p");
-    badgeEl.classList.add(cat.cls);
-    textEl.textContent = "1:" + formatRatio(rr);
+	  // אם rr לא תקין – מציגים טקסט קטגוריה ("1:1"), לא 1:0.00
+	if (!isFinite(rr) || rr <= 0) {
+		textEl.textContent = cat.text;
+	} else {
+		textEl.textContent = "1:" + formatRatio(rr);
+	}
 
 }
+
 // ======================================================
 // ==== Net Profit Calculator (profiles + local save + calc) ====
 // ======================================================
@@ -874,6 +876,10 @@ const RISK_SAVE_TOKEN = "dor_recommend_it"; // חייב להתאים ל-Apps Scr
 		showRiskSaveMsg("שגיאת רשת בשמירה ל-Google.", true);
 	  });
 	}
-
+	// expose globally for onclick handlers (risk-reward.html)
+	window.saveRecommendationToGoogle = saveRecommendationToGoogle;
+	window.openRiskCopyModal = openRiskCopyModal;
+	window.closeRiskCopyModal = closeRiskCopyModal;
+	window.copyRiskSummaryToClipboard = copyRiskSummaryToClipboard;
 
 })();

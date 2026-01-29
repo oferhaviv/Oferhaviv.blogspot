@@ -801,3 +801,7 @@
   font-weight:700;
   margin-bottom:10px;
 }
+.calc-btn-row .calc-btn{ width:auto; } /* כי יש לך width:100% ב-.calc-btn */
+
+.calc-btn-row > .calc-btn-secondary{ flex: 0 0 30%; }
+.calc-btn-row > .calc-btn:not(.calc-btn-secondary){ flex: 0 0 70%; }
