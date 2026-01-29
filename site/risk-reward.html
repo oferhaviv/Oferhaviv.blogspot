@@ -18,7 +18,11 @@
                 </button>
             </div>
         </div>
-
+		<div class="calc-row">
+		  <label for="risk_cancel">מחיר ביטול עסקה (אופציונלי) ($):</label>
+		  <input type="number" id="risk_cancel" step="0.01" min="0" />
+		</div>
+		
         <div class="calc-row">
             <label for="risk_sl">סטופ לוס ($):</label>
             <input type="number" id="risk_sl" step="0.01" min="0" />
@@ -34,18 +38,24 @@
             <input type="number" id="risk_tp2" step="0.01" min="0" />
         </div>
 
-
-
         <div class="calc-row">
             <label for="risk_amount">כמות (מניות):</label>
-            <input type="number" id="risk_amount" step="1" min="1" value="1" />
+            <input type="number" id="risk_amount" step="1" min="1" value="10" />
         </div>
+		
+		<div class="calc-row">
+			<label for="risk_notes">הערות:</label>
+			<textarea id="risk_notes" rows="3" style="width:100%; padding:8px; border-radius:6px; border:1px solid #444; box-sizing:border-box; background:#1f2933; color:#f9fafb;"></textarea>
+		</div>
     </div>
 
 
     <button type="button" class="calc-btn" onclick="calculateStock()">
         חשב סיכון / סיכוי
     </button>
+	<button type="button" class="calc-btn calc-btn-secondary" onclick="saveRecommendationToGoogle()">שמור</button>
+
+<div class="help-box" id="risk_save_msg" style="display:none;"></div>
 
     <div class="calc-results" id="riskResults" style="display:none;">
         <div class="results-grid">
