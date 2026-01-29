@@ -1,0 +1,5 @@
+
+https://finnhub.io/api/v1/quote?symbol=AAPL&token=d4b0dq9r01qp275hrhfgd4b0dq9r01qp275hrhg0
+https://finnhub.io/api/v1/stock/recommendation?symbol=AAPL&token=d4b0dq9r01qp275hrhfgd4b0dq9r01qp275hrhg0
+https://finnhub.io/api/v1/stock/upgrade-downgrade?symbol=AAPL&from=2025-12-05&to=2025-12-12&token=d4b0dq9r01qp275hrhfgd4b0dq9r01qp275hrhg0
+
