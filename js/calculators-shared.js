@@ -843,16 +843,15 @@ const RISK_SAVE_TOKEN = "dor_recommend_it"; // חייב להתאים ל-Apps Scr
 	  showRiskSaveMsg("שומר...", false);
 
 	  fetch(RISK_SAVE_ENDPOINT, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(payload)
-	  })
-	  .then(r => r.json().catch(() => ({})))
-	  .then(data => {
-		if (data && data.ok) {
-		  showRiskSaveMsg("נשמר בהצלחה ✅", false);
+		  method: "POST",
+		  mode: "no-cors", // <-- חשוב!
+		  headers: { "Content-Type": "application/json" },
+		  body: JSON.stringify(payload)
+		})
+		.then(() => {
+		  // במצב no-cors אין לנו גישה לתגובה, אז נניח הצלחה אם לא הייתה חריגה
+		  showRiskSaveMsg("נשמר (no-cors) ✅", false);
 
-		  // 5) מציג חלונית עם טקסט מוכן להעתקה
 		  const summaryText = buildRiskSummaryText(recDate, {
 			symbol,
 			buy,
@@ -866,15 +865,12 @@ const RISK_SAVE_TOKEN = "dor_recommend_it"; // חייב להתאים ל-Apps Scr
 			tp2Percent
 		  });
 		  openRiskCopyModal(summaryText);
+		})
+		.catch(err => {
+		  console.error(err);
+		  showRiskSaveMsg("שגיאת רשת בשמירה ל-Google.", true);
+		});
 
-		} else {
-		  showRiskSaveMsg("שגיאה בשמירה: " + (data.error || "לא ידוע"), true);
-		}
-	  })
-	  .catch(err => {
-		console.error(err);
-		showRiskSaveMsg("שגיאת רשת בשמירה ל-Google.", true);
-	  });
 	}
 	// expose globally for onclick handlers (risk-reward.html)
 	window.saveRecommendationToGoogle = saveRecommendationToGoogle;

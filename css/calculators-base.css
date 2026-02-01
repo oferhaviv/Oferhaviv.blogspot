@@ -801,7 +801,18 @@
   font-weight:700;
   margin-bottom:10px;
 }
-.calc-btn-row .calc-btn{ width:auto; } /* כי יש לך width:100% ב-.calc-btn */
+/* כפתורים בשורה אחת – 70/30 – עוקף width:100% של calc-btn */
+.calc-btn-row{
+  display:flex;
+  gap:10px;
+  align-items:stretch;
+}
 
-.calc-btn-row > .calc-btn-secondary{ flex: 0 0 30%; }
-.calc-btn-row > .calc-btn:not(.calc-btn-secondary){ flex: 0 0 70%; }
+.calc-btn-row .calc-btn{
+  width:auto !important;
+  margin:0 !important;
+  min-width:0;
+}
+
+.calc-btn-row .calc-btn-main{ flex: 7 1 0; }
+.calc-btn-row .calc-btn-save{ flex: 3 1 0; }
