@@ -674,7 +674,7 @@ function setRRBadge(rr, badgeId, textId) {
 // ================================
 // Save Recommendation -> Google Sheet (Apps Script Web App)
 // ================================
-const RISK_SAVE_ENDPOINT = "https://script.google.com/macros/s/AKfycbyrsHb_HBKZDYTcQk_C7kuIgKLjaslWIi00T5i6OEHUTQ7KANhFN5y2piI_3_lZREXw/exec";
+const RISK_SAVE_ENDPOINT = "https://script.google.com/macros/s/AKfycbxzYicn_CAPYDJd40ltqP1O5YeDokftklTIC8isIBAYhtOKCUcnKTfkl06q36JkDug/exec";
 const RISK_SAVE_SHEET_ID = "1EmnIbmoARnbdc7kDltCt4gtwp5UISJC2TGneMu0GokM";
 const RISK_SAVE_TOKEN = "dor_recommend_it"; // חייב להתאים ל-Apps Script
 
