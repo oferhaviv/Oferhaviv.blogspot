@@ -823,7 +823,7 @@ const RISK_SAVE_TOKEN = "dor_recommend_it"; // חייב להתאים ל-Apps Scr
 		stop: sl,
 		tp1,
 		tp2,
-		cancelPrice: (isFinite(cancelPrice) && cancelPrice > 0) ? cancelPrice : "",
+		cancelPrice: (isFinite(cancelPrice) && cancelPrice > 0) ? cancelPrice : sl,
 
 		qty,
 		cost: totalCost,
